@@ -96,9 +96,11 @@ quad_t	 auth_check_change(auth_session_t *);
 void	 auth_clroptions(auth_session_t *);
 void	 auth_clroption(auth_session_t *, char *);
 
+#ifdef __OpenBSD__
 char	*auth_mkvalue(char *);
 void	 auth_checknologin(struct login_cap *);
 int	 auth_cat(char *);
+#endif
 
 __END_DECLS
 

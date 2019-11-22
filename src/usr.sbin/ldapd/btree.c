@@ -36,6 +36,10 @@
 
 #include "btree.h"
 
+#ifndef __OpenBSD__
+#include "ldapd_compat.h"
+#endif
+
 /* #define DEBUG */
 
 #ifdef DEBUG

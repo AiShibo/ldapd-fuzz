@@ -23,6 +23,10 @@
 #include <sys/un.h>
 #include <sys/wait.h>
 
+#ifndef __OpenBSD__
+#include <sys/param.h>
+#endif
+
 #include <err.h>
 #include <errno.h>
 #include <signal.h>
@@ -459,8 +463,10 @@ ldape(int debug, int verbose, char *csockpath)
 			fatal("cannot drop privileges");
 	}
 
+#ifdef __OpenBSD__
 	if (pledge("stdio flock inet unix recvfd", NULL) == -1)
 		fatal("pledge");
+#endif
 
 	log_debug("ldape: entering event loop");
 	event_dispatch();

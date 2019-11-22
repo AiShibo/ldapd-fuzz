@@ -311,8 +311,10 @@ main(int argc, char *argv[])
 		if (parse_config(conffile) != 0)
 			exit(2);
 
+#ifdef __OpenBSD__
 		if (pledge("stdio rpath wpath cpath flock", NULL) == -1)
 			err(1, "pledge");
+#endif
 
 		if (action == COMPACT_DB)
 			return compact_namespaces(datadir);
@@ -333,8 +335,10 @@ main(int argc, char *argv[])
 	imsg_init(&ibuf, ctl_sock);
 	done = 0;
 
+#ifdef __OpenBSD__
 	if (pledge("stdio", NULL) == -1)
 		err(1, "pledge");
+#endif
 
 	/* process user request */
 	switch (action) {

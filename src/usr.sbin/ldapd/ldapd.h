@@ -38,6 +38,10 @@
 #include "imsgev.h"
 #include "evbuffer_tls.h"
 
+#ifndef __OpenBSD__
+#include "ldapd_compat.h"
+#endif
+
 #define CONFFILE		 "/etc/ldapd.conf"
 #define LDAPD_USER		 "_ldapd"
 #define LDAPD_SOCKET		 "/var/run/ldapd.sock"

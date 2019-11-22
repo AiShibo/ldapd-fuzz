@@ -8,32 +8,32 @@ CLEANFILES=ldapd.pid log ldapd1.conf ${DIT}_indx.db ${DIT}_data.db ${DIT2}_indx.
 
 # Needs p5-ldap and openldap (client)
 
-PERL_REQUIRE !=	perl -Mstrict -Mwarnings -e ' \
+#PERL_REQUIRE !=	perl -Mstrict -Mwarnings -e ' \
     eval { require Net::LDAP } or print $@; \
 '
-.if ! empty (PERL_REQUIRE)
-regress:
-	@echo "${PERL_REQUIRE}"
-	@echo install package p5-ldap
-	@echo SKIPPED
-.endif
+#.if ! empty (PERL_REQUIRE)
+#regress:
+#	@echo "${PERL_REQUIRE}"
+#	@echo install package p5-ldap
+#	@echo SKIPPED
+#.endif
 
-.if ! (make(clean) || make(cleandir) || make(obj))
-LDAP_DEP != ldapsearch -VV 2>/dev/null ; echo $?
-.endif
-.if ("${LDAP_DEP}" != 0)
-regress:
-	@echo openldap-client must be installed
-	@echo SKIPPED
-.endif
+#.if ! (make(clean) || make(cleandir) || make(obj))
+#LDAP_DEP != ldapsearch -VV 2>/dev/null ; echo $?
+#.endif
+#.if ("${LDAP_DEP}" != 0)
+#regress:
+#	@echo openldap-client must be installed
+#	@echo SKIPPED
+#.endif
 
 REGRESS_TARGETS = connect import perl purge #cpan
 
 bootstrap:
 	@[ -z "${SUDO}" ] || ${SUDO} true
 	@${SUDO} install -m 600 -o root ${.CURDIR}/ldapd.conf ${.OBJDIR}/ldapd1.conf
-	@${SUDO} ldapd -n -r ${.OBJDIR} -f ${.OBJDIR}/ldapd1.conf
-	@${SUDO} ldapd -dvv -r ${.OBJDIR} -f ${.OBJDIR}/ldapd1.conf > ${.OBJDIR}/log 2>&1 & \
+	@${SUDO} ../../../usr.sbin/ldapd/ldapd -n -r ${.OBJDIR} -f ${.OBJDIR}/ldapd1.conf
+	@${SUDO} ../../../usr.sbin/ldapd/ldapd -dvv -r ${.OBJDIR} -f ${.OBJDIR}/ldapd1.conf > ${.OBJDIR}/log 2>&1 & \
 		echo $$! > ${.OBJDIR}/ldapd.pid
 	@sleep 1
 

@@ -238,11 +238,13 @@ check_password(struct request *req, const char *stored_passwd,
 		SHA1_Update(&ctx, salt, sz - SHA_DIGEST_LENGTH);
 		SHA1_Final(md, &ctx);
 		return (bcmp(md, tmp, SHA_DIGEST_LENGTH) == 0 ? 1 : 0);
+/* FIXME
 	} else if (strncmp(stored_passwd, "{CRYPT}", 7) == 0) {
 		encpw = crypt(passwd, stored_passwd + 7);
 		if (encpw == NULL)
 			return (-1);
 		return (strcmp(encpw, stored_passwd + 7) == 0 ? 1 : 0);
+*/
 	} else if (strncmp(stored_passwd, "{BSDAUTH}", 9) == 0) {
 		if (send_auth_request(req, stored_passwd + 9, passwd) == -1)
 			return (-1);

@@ -52,6 +52,11 @@
 
 #include <bsd_auth.h>
 
+#ifndef __OpenBSD__
+#define DEF_WEAK(x)
+#endif
+
+#ifdef __OpenBSD__
 static int _auth_checknologin(login_cap_t *, int);
 
 char *
@@ -303,12 +308,15 @@ out:
 	return (auth_getstate(as) & AUTH_ALLOW);
 }
 DEF_WEAK(auth_approval);
+#endif
 
 auth_session_t *
 auth_usercheck(char *name, char *style, char *type, char *password)
 {
-	char namebuf[LOGIN_NAME_MAX + 1 + NAME_MAX + 1];
-	char pwbuf[_PW_BUF_LEN];
+//FIXME	char namebuf[LOGIN_NAME_MAX + 1 + NAME_MAX + 1];
+	char namebuf[128 + 1 + NAME_MAX + 1];
+//FIXME	char pwbuf[_PW_BUF_LEN];
+	char pwbuf[1024];
 	auth_session_t *as;
 	login_cap_t *lc;
 	struct passwd pwstore, *pwd = NULL;
@@ -373,6 +381,7 @@ auth_userokay(char *name, char *style, char *type, char *password)
 }
 DEF_WEAK(auth_userokay);
 
+#ifdef __OpenBSD__
 auth_session_t *
 auth_userchallenge(char *name, char *style, char *type, char **challengep)
 {
@@ -488,6 +497,8 @@ DEF_WEAK(auth_userresponse);
  * Use auth_close() or auth_getstate() to determine if the authentication
  * worked.
  */
+#endif
+
 auth_session_t *
 auth_verify(auth_session_t *as, char *style, char *name, ...)
 {

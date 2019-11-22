@@ -236,9 +236,11 @@ main(int argc, char *argv[])
 	imsgev_init(iev_ldape, pipe_parent2ldap[0], NULL, ldapd_imsgev,
 	    ldapd_needfd);
 
+#ifdef __OpenBSD__
 	if (pledge("stdio rpath wpath cpath getpw sendfd proc exec",
 	    NULL) == -1)
 		err(1, "pledge");
+#endif
 
 	event_dispatch();
 

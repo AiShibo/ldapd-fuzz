@@ -1,5 +1,6 @@
 #	$OpenBSD: Makefile,v 1.16 2019/05/11 17:46:02 rob Exp $
 
+LOCALBASE?=	/usr/local
 PROG=		ldapd
 MAN=		ldapd.8 ldapd.conf.5
 SRCS=		log.c logmsg.c control.c \
@@ -8,13 +9,28 @@ SRCS=		log.c logmsg.c control.c \
 		auth.c modify.c index.c evbuffer_tls.c \
 		validate.c uuid.c schema.c imsgev.c syntax.c matching.c
 
-LDADD=		-levent -ltls -lssl -lcrypto -lz -lutil
+.PATH: ${.CURDIR}/../../lib/libutil
+SRCS+=		ber.c
+
+.PATH: ${.CURDIR}/../../lib/libc/gen
+SRCS+=		auth_subr.c authenticate.c
+
+LDADD=		-levent -ltls -lssl -lcrypto -lz -lutil -limsg
 DPADD=		${LIBEVENT} ${LIBTLS} ${LIBSSL} ${LIBCRYPTO} ${LIBZ} ${LIBUTIL}
 CFLAGS+=	-I${.CURDIR} -g
 CFLAGS+=	-Wall -Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+=	-Wmissing-declarations
 CFLAGS+=	-Wshadow -Wpointer-arith -Wcast-qual
 CFLAGS+=	-Wsign-compare
+CFLAGS+=	-I${.CURDIR}/../../../libevent/src/lib/libevent \
+		-I${.CURDIR}/../../../libimsg/src/lib/libutil \
+		-I${.CURDIR}/../../lib/libutil \
+		-I${.CURDIR}/../../include \
+		-I ${LOCALBASE}/include \
+		-D__dead=''
+LDFLAGS+=	-L${.CURDIR}/../../../libevent/src/lib/libevent \
+		-L${.CURDIR}/../../../libimsg/src/lib/libutil \
+		-L ${LOCALBASE}/lib
 CLEANFILES+=	y.tab.h parse.c
 
 SCHEMA_FILES=	core.schema \

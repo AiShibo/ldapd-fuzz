@@ -1,0 +1,10 @@
+*.depend
+*.debug
+*.full
+*.gz
+*.o
+src/usr.sbin/ldapctl/ldapctl
+src/usr.sbin/ldapctl/parse.c
+src/usr.sbin/ldapd/ldapd
+src/usr.sbin/ldapd/parse.c
+src/usr.sbin/ldapd/parse.h

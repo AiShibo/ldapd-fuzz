@@ -1018,7 +1018,11 @@ host_dns(const char *s, const char *cert,
 	hints.ai_family = PF_UNSPEC;
 	hints.ai_socktype = SOCK_DGRAM; /* DUMMY */
 	error = getaddrinfo(s, NULL, &hints, &res0);
+#ifdef __OpenBSD__
 	if (error == EAI_AGAIN || error == EAI_NODATA || error == EAI_NONAME)
+#else
+	if (error == EAI_AGAIN || error == EAI_NONAME)
+#endif
 		return (0);
 	if (error) {
 		log_warnx("host_dns: could not parse \"%s\": %s", s,

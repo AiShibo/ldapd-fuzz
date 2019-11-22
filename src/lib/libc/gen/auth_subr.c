@@ -71,6 +71,12 @@
 
 #include <login_cap.h>
 
+
+#ifndef __OpenBSD__
+#include <libutil.h>
+#define	DEF_WEAK(x)
+#endif
+
 #define	MAXSPOOLSIZE	(8*1024)	/* Spool up to 8K of back info */
 
 struct rmfiles {
@@ -359,6 +365,9 @@ auth_setenv(auth_session_t *as)
 				if (*line != '\0' && setenv(name, line, 1))
 					warn("setenv(%s, %s)", name, line);
 			}
+// FIXME
+		}
+#ifdef __OpenBSD__
 		} else
 		if (!strncasecmp(line, BI_UNSETENV, sizeof(BI_UNSETENV)-1)) {
 			if (isblank((unsigned char)line[sizeof(BI_UNSETENV) - 1])) {
@@ -377,6 +386,7 @@ auth_setenv(auth_session_t *as)
 				unsetenv(name);
 			}
 		}
+#endif
 		while (*line++)
 			;
 	}
@@ -396,12 +406,16 @@ auth_clrenv(auth_session_t *as)
 			if (isblank((unsigned char)line[sizeof(BI_SETENV) - 1])) {
 				line[0] = 'i'; line[1] = 'g'; line[2] = 'n';
 			}
+// FIXME
+		}
+#ifdef __OpenBSD__
 		} else
 		if (!strncasecmp(line, BI_UNSETENV, sizeof(BI_UNSETENV)-1)) {
 			if (isblank((unsigned char)line[sizeof(BI_UNSETENV) - 1])) {
 				line[2] = 'i'; line[3] = 'g'; line[4] = 'n';
 			}
 		}
+#endif
 		while (*line++)
 			;
 	}
@@ -615,7 +629,8 @@ int
 auth_setpwd(auth_session_t *as, struct passwd *pwd)
 {
 	struct passwd pwstore;
-	char *instance, pwbuf[_PW_BUF_LEN];
+//FIXME	char *instance, pwbuf[_PW_BUF_LEN];
+	char *instance, pwbuf[1024];
 
 	if (pwd == NULL && as->pwd == NULL && as->name == NULL)
 		return (-1);		/* true failure */
@@ -738,7 +753,7 @@ auth_check_expire(auth_session_t *as)
 {
 	if (as->pwd == NULL && auth_setpwd(as, NULL) < 0) {
 		as->state &= ~AUTH_ALLOW;
-		as->state |= AUTH_EXPIRED;	/* XXX */
+//FIXME		as->state |= AUTH_EXPIRED;	/* XXX */
 		return (-1);
 	}
 
@@ -750,7 +765,7 @@ auth_check_expire(auth_session_t *as)
 			gettimeofday(&as->now, NULL);
 		if ((quad_t)as->now.tv_sec >= (quad_t)as->pwd->pw_expire) {
 			as->state &= ~AUTH_ALLOW;
-			as->state |= AUTH_EXPIRED;
+//FIXME			as->state |= AUTH_EXPIRED;
 		}
 		if ((quad_t)as->now.tv_sec == (quad_t)as->pwd->pw_expire)
 			return (-1);
@@ -765,7 +780,7 @@ auth_check_change(auth_session_t *as)
 {
 	if (as->pwd == NULL && auth_setpwd(as, NULL) < 0) {
 		as->state &= ~AUTH_ALLOW;
-		as->state |= AUTH_PWEXPIRED;	/* XXX */
+//FIXME		as->state |= AUTH_PWEXPIRED;	/* XXX */
 		return (-1);
 	}
 
@@ -777,7 +792,7 @@ auth_check_change(auth_session_t *as)
 			gettimeofday(&as->now, NULL);
 		if (as->now.tv_sec >= (quad_t)as->pwd->pw_change) {
 			as->state &= ~AUTH_ALLOW;
-			as->state |= AUTH_PWEXPIRED;
+//FIXME			as->state |= AUTH_PWEXPIRED;
 		}
 		if ((quad_t)as->now.tv_sec == (quad_t)as->pwd->pw_change)
 			return (-1);
@@ -924,6 +939,8 @@ auth_call(auth_session_t *as, char *path, ...)
 					as->state  = AUTH_CHALLENGE;
 					break;
 				}
+#ifdef __OpenBSD__
+// FIXME
 				if (!strcasecmp(line, "expired")) {
 					as->state  = AUTH_EXPIRED;
 					break;
@@ -932,6 +949,7 @@ auth_call(auth_session_t *as, char *path, ...)
 					as->state  = AUTH_PWEXPIRED;
 					break;
 				}
+#endif
 			}
 			break;
 		} else if (!strncasecmp(line, BI_AUTH, sizeof(BI_AUTH)-1)) {
@@ -1050,6 +1068,8 @@ _auth_spool(auth_session_t *as, int fd)
 		 * XXX - checking for BI_FDPASS here is annoying but
 		 *       we need to avoid the read() slurping in control data.
 		 */
+#ifdef __OpenBSD__
+// FIXME
 		while (r-- > 0) {
 			if (*b++ == '\n') {
 				b[-1] = '\0';
@@ -1058,6 +1078,7 @@ _auth_spool(auth_session_t *as, int fd)
 				s = b;
 			}
 		}
+#endif
 	}
 
 	syslog(LOG_ERR, "Overflowed backchannel spool buffer");

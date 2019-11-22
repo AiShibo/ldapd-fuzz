@@ -1,0 +1,2626 @@
+2019-10-27 20:05  tb
+
+	* lib/libutil/ber.c, lib/libutil/ber.h, usr.sbin/ldapctl/ldapctl.c,
+	  usr.sbin/ldapd/attributes.c, usr.sbin/ldapd/auth.c,
+	  usr.sbin/ldapd/conn.c, usr.sbin/ldapd/filter.c,
+	  usr.sbin/ldapd/index.c, usr.sbin/ldapd/ldape.c,
+	  usr.sbin/ldapd/logmsg.c, usr.sbin/ldapd/modify.c,
+	  usr.sbin/ldapd/schema.c, usr.sbin/ldapd/search.c,
+	  usr.sbin/ldapd/util.c, usr.sbin/ldapd/validate.c: The ber_*
+	  namespace is used by liblber since time immemorial, so move our
+	  BER API to the unused ober_* prefix to avoid some breakage in
+	  ports.
+
+	  Problem diagnosed by jmatthew with ber_free() in samba, but there
+	  are many others as pointed out by sthen.
+
+	  tests & ok rob ok sthen (who had an almost identical diff for
+	  libutil) "go head hit it" deraadt
+
+	  OpenBSD 6.6 errata 002
+
+2019-10-26 17:52  martijn
+
+	* usr.sbin/ldapd/ldape.c: The starttls command doesn't have a value
+	  with its extended request.  The handling of this changed with
+	  libutil/ber.c r1.12 resulting in starttls failing.
+
+	  Found by several.  Fix suggestion by roklein <at> roklein <dot>
+	  de OK claudio@
+
+2019-10-24 12:39  tb
+
+	* lib/libutil/ber.c, lib/libutil/ber.h, usr.sbin/ldapctl/ldapctl.c,
+	  usr.sbin/ldapd/attributes.c, usr.sbin/ldapd/auth.c,
+	  usr.sbin/ldapd/conn.c, usr.sbin/ldapd/filter.c,
+	  usr.sbin/ldapd/index.c, usr.sbin/ldapd/ldape.c,
+	  usr.sbin/ldapd/logmsg.c, usr.sbin/ldapd/modify.c,
+	  usr.sbin/ldapd/schema.c, usr.sbin/ldapd/search.c,
+	  usr.sbin/ldapd/util.c, usr.sbin/ldapd/validate.c: The ber_*
+	  namespace is used by liblber since time immemorial, so move our
+	  BER API to the unused ober_* prefix to avoid some breakage in
+	  ports.
+
+	  Problem diagnosed by jmatthew with ber_free() in samba, but there
+	  are many others as pointed out by sthen.
+
+	  tests & ok rob ok sthen (who had an almost identical diff for
+	  libutil) "go head hit it" deraadt
+
+2019-08-15 06:11  martijn
+
+	* lib/libutil/ber.c: Revert previous. There were some users of the
+	  quirky behaviour that were missed during code scan.
+
+2019-08-14 17:20  martijn
+
+	* lib/libutil/ber.c: Make ber_scanf_elements's 'e' attribute eat
+	  the element.	Right now all consumers use 'e' at the end of the
+	  list, so no regressions should be introduced.
+
+	  OK claudio@ Seems sensible to deraadt@
+
+2019-08-14 04:48  martijn
+
+	* lib/libutil/ber.c: Make sure that ber in ber_scanf_elements is
+	  not NULL before parsing format where ber is utilized. This also
+	  allows us to remove the ber->be_next check, which can cause weird
+	  behaviour, because a NULL be_next would result in parsing the
+	  last element twice.
+
+	  OK claudio@ on previous version OK rob@
+
+2019-08-05 12:38  martijn
+
+	* lib/libutil/ber.c: Don't use a 0 element to determine the end of
+	  an OID when comparing two OIDS. This can result in false equality
+	  matches.
+
+	  OK claudio@
+
+2019-08-05 12:30  martijn
+
+	* lib/libutil/ber.c: There's no reason why the first digit of an
+	  OID can't be 0.
+
+	  OK claudio@ "Good find" deraadt@
+
+2019-07-03 03:24  deraadt
+
+	* usr.sbin/ldapd/util.c: snprintf/vsnprintf return < 0 on error,
+	  rather than -1.
+
+2019-06-28 13:32  deraadt
+
+	* lib/libc/gen/auth_subr.c, lib/libc/gen/authenticate.c,
+	  usr.sbin/ldapd/ldape.c: When system calls indicate an error they
+	  return -1, not some arbitrary value < 0.  errno is only updated
+	  in this case.  Change all (most?) callers of syscalls to follow
+	  this better, and let's see if this strictness helps us in the
+	  future.
+
+2019-06-27 18:03  deraadt
+
+	* usr.sbin/: ldapctl/ldapctl.c, ldapd/namespace.c: Some asprintf()
+	  calls were checked < 0, rather than the precise == -1.  ok
+	  millert nicm tb, etc
+
+2019-06-17 17:20  espie
+
+	* share/mk/bsd.regress.mk: add REGRESS_EXPECTED_FAILURES variable,
+	  for those tests that are expected to fail because they're not yet
+	  implemented.
+
+	  okay bluhm@
+
+2019-06-15 07:30  espie
+
+	* share/mk/bsd.regress.mk: simplify cleanup handling okay bluhm@
+
+2019-06-11 18:14  espie
+
+	* share/mk/bsd.regress.mk: make things slightly less insane: -
+	  actually use the ERRORS framework for REGRESS_LOG - put it at end
+	  of file, as best working (years of practice on bsd.port.mk) -
+	  actually use .SILENT - fix REGRESS_IGNORE_FAIL. Don't put a - in
+	  front of lines, but just don't error out as false on FAILED
+	  tests.  This finally allows ^C to actually interrupt a testsuite.
+	   - add one missing .PHONY (quite a few more for later)
+
+	  okay bluhm@
+
+2019-06-01 19:40  rob
+
+	* lib/libutil/ber.c: Limit maximum number of length octets to
+	  platform independent sizeof(int32_t).
+
+	  Problem noticed by bluhm@. Discussed on hackers.
+
+	  ok claudio@
+
+2019-05-21 13:29  rob
+
+	* lib/libutil/ber.c: whitespace
+
+2019-05-18 18:45  rob
+
+	* usr.sbin/ldapd/modify.c: Fix LDAP RFC reference in comment. Also
+	  noticed by martijn.
+
+	  ok guenther@, claudio@
+
+2019-05-16 21:12  rob
+
+	* lib/libutil/ber.c: Add XXX to a comment.
+
+2019-05-14 16:43  bluhm
+
+	* share/mk/bsd.regress.mk: Remove the REGRESS_MAXTIME feature from
+	  regress framework.  The timeout based on CPU seconds is pretty
+	  useless, most hanging tests sleep and do not spin.  The timeout
+	  could not be distinguished from failure.  Only 3 tests used it.
+	  OK anton@ schwarze@ cheloha@ otto@
+
+2019-05-12 20:25  rob
+
+	* lib/libutil/ber.c: Enable support for the writting of BITSTRING
+	  by treating it as an OCTETSTRING.
+
+	  ok claudio@
+
+2019-05-12 20:13  rob
+
+	* lib/libutil/ber.c: Enforce smallest number of contents octets for
+	  int (and enum).
+
+	  ok claudio@
+
+2019-05-12 18:11  rob
+
+	* lib/libutil/ber.c: Fail early if a (universal) primitive type
+	  identifies as constructed, or if a boolean has a contents length
+	  other than 1.
+
+	  ok claudio@
+
+2019-05-12 17:50  rob
+
+	* lib/libutil/ber.c: Enforce minimal number of octets for tag > 30.
+
+	  "sure" claudio@
+
+2019-05-12 17:42  rob
+
+	* lib/libutil/ber.c: In long form encoding, explicitly prohibit an
+	  initial length octet of 0xff which is reserved for future use.
+
+	  ok claudio@
+
+2019-05-11 17:46  rob
+
+	* lib/libutil/ber.c, lib/libutil/ber.h, usr.sbin/ldapctl/Makefile,
+	  usr.sbin/ldapd/Makefile, usr.sbin/ldapd/aldap.h,
+	  usr.sbin/ldapd/ber.c, usr.sbin/ldapd/ber.h: The BER API is
+	  currently used by ldap, ldapd, ldapctl, ypldap, snmpd, and
+	  snmpctl. Separate copies of ber.[ch] have existed and been
+	  maintained in sync in ldap, ldapd, ypldap and snmpd.
+
+	  This commit moves the BER API into /usr/lib/libutil. All current
+	  consumers already link libutil. ldapd and snmpd regress passes,
+	  and release builds.
+
+	  With help from tb@ and guenther@.
+
+	  ok deraadt@, tb@
+
+2019-04-27 14:58  rob
+
+	* usr.sbin/ldapd/ber.c: Only apply sign extension when less than
+	  eight bytes have been consumed. This fixes a problem when
+	  handling large negative integers.
+
+	  ok claudio@
+
+2019-03-31 03:36  yasuoka
+
+	* usr.sbin/ldapd/ldapd.c: Avoid calling dup2(oldd, newd) when oldd
+	  == newd.  In that case the descriptor keeps CLOEXEC flag then it
+	  will be closed unexpectedly by exec().
+
+	  ok tedu florian
+
+2019-03-23 17:03  millert
+
+	* lib/libc/gen/auth_subr.c: Remove useless secure_path(3) calls.
+	  There is no point in checking permissions of files in root-owned
+	  directories.	If it even was a problem, secure_path(3) suffers
+	  from unsolvable TOCTOU issues.  OK deraadt@
+
+2019-02-13 22:57  deraadt
+
+	* usr.sbin/ldapd/: parse.y, schema.c: (unsigned) means (unsigned
+	  int) which on ptrdiff_t or size_t or other larger types really is
+	  a range reduction...	Almost any cast to (unsigned) is a bug.  ok
+	  millert tb benno
+
+2019-01-25 00:19  millert
+
+	* lib/libc/gen/auth_subr.c: I am retiring my old email address;
+	  replace it with my OpenBSD one.
+
+2018-12-05 06:44  claudio
+
+	* usr.sbin/ldapd/search.c: key.data is a void *, on gcc archs doing
+	  a %s printf with such a pointer results in a warning. Use either
+	  the original string value or use a cast.  This makes both clang
+	  and gcc happy.  OK guenther@
+
+2018-12-03 22:30  bluhm
+
+	* share/mk/bsd.regress.mk: If a regress uses REGRESS_SKIP_TARGETS
+	  to skip part of its tests, print SKIPPED.  This helps to detect
+	  such incomplete tests.  OK anton@
+
+2018-11-27 12:09  martijn
+
+	* usr.sbin/ldapd/: ber.c, ber.h: Sync with ldap(1)
+
+2018-11-20 07:20  martijn
+
+	* usr.sbin/ldapd/ber.c: Fix when ber_free_elements is called with a
+	  NULL-value.  Found via snmpctl snmp walk 127.0.0.1 oid 1
+
+	  OK claudio@
+
+2018-11-04 08:04  jmc
+
+	* usr.sbin/ldapd/btree.3: some tweaks from raf czlonka, plus one
+	  more from me;
+
+2018-11-01 00:18  sashan
+
+	* usr.sbin/ldapd/parse.y: - odd condition/test in PF lexer   (and
+	  other lexers too)
+
+	  This commit rectifies earlier change:
+
+	      in the lex... even inside quotes, a \ followed by space or
+	  tab should
+	      expand to space or tab, and a \ followed by newline should be
+	  ignored
+	      (as a line continuation).  compatible with the needs of
+	  hoststated
+	      (which has the most strict quoted string requirements), and
+	  ifstated
+	      (where one commonly does line continuations in strings).
+
+	  OK deraadt@, OK millert@
+
+2018-10-05 11:15  bluhm
+
+	* share/mk/bsd.regress.mk: Add regress variable to run setup once
+	  for all tests.  OK anton@ benno@
+
+2018-09-26 09:34  bluhm
+
+	* share/mk/bsd.regress.mk: Add variables for setup and cleanup of
+	  regression tests.  OK anton@ jca@ tb@ benno@
+
+2018-09-07 07:35  miko
+
+	* usr.sbin/ldapd/parse.y: replace malloc()+strlcpy() with strndup()
+	  in cmdline_symset().
+
+	  "looks good" gilles@ halex@
+
+2018-08-27 12:15  claudio
+
+	* usr.sbin/ldapd/filter.c: Undefined plans can never match. Check
+	  for that before trying to use the plan.  OK millert@ gsoares@
+
+2018-08-27 11:43  claudio
+
+	* usr.sbin/ldapd/filter.c: Wrap some overly long lines. No
+	  functional change
+
+2018-08-12 22:04  rob
+
+	* usr.sbin/ldapd/: ber.c, ber.h, ldape.c: Change
+	  ber_write_elements() to return ssize_t instead of int.
+
+	  ok claudio@
+
+2018-08-03 01:51  rob
+
+	* usr.sbin/ldapd/: ber.c, ber.h: Place a limit on the number of
+	  elements in a ber sequence/set. This prevents possible stack
+	  overflow due to recursion in ber_free_elements().
+
+	  ok claudio@
+
+2018-07-31 19:38  rob
+
+	* usr.sbin/ldapd/ber.c: Relocate some public functions above the
+	  internal functions comment.
+
+	  ok claudio@
+
+2018-07-31 11:37  rob
+
+	* usr.sbin/ldapd/ber.c: Fix some debugging output now that ber type
+	  and encoding are unsigned int.
+
+	  ok claudio@
+
+2018-07-31 11:01  claudio
+
+	* usr.sbin/ldapd/: ber.c, ber.h, conn.c, filter.c, ldapd.h,
+	  ldape.c, logmsg.c, search.c: Make ber type and encoding a
+	  unsigned int instead of unsigned long.  This way the size is the
+	  same on all archs and 32bit should be good enough.  OK rob@
+
+2018-07-13 08:50  rob
+
+	* usr.sbin/ldapd/ber.c: Fix some comments referencing sockets which
+	  are not used by the ber api. The api uses read and write buffers
+	  (byte streams) that are utilized by calling applications which
+	  may or may not use sockets.
+
+	  ok claudio@
+
+	  buffer byte streams that applications then use for
+
+2018-07-13 08:30  rob
+
+	* usr.sbin/ldapd/ber.c: Fix loop condition in ber.c. Discussed with
+	  claudio.
+
+	  ok claudio@, jca@
+
+2018-07-11 07:39  krw
+
+	* usr.sbin/ldapd/parse.y: Do for most running out of memory err()
+	  what was done for most running out of memory log_warn(). i.e.
+	  ("%s", __func__) instead of manual function names and redundant
+	  verbiage about which wrapper detected the out of memory
+	  condition.
+
+	  ok henning@
+
+2018-07-09 12:05  krw
+
+	* usr.sbin/ldapd/parse.y: No need to mention which memory
+	  allocation entry point failed (malloc, calloc or strdup), we just
+	  need to log that we ran out of memory in a particular function.
+
+	  Recommended by florian@ and deraadt@
+
+	  ok benno@ henning@ tb@
+
+2018-07-09 09:21  jca
+
+	* usr.sbin/ldapd/ber.c: Simplify ber_read()
+
+	  After the removal of fd-based read/writes I could have trimmed
+	  the code further.
+
+	  - no socket-based reads so ber_read() doesn't need to loop until
+	  it gets the desired amount of data - return either the requested
+	  amount of data or -1/ECANCELED, the caller shouldn't have to
+	  handle partial reads itself - inline ber_readbuf() into
+	  ber_read()
+
+	  ok rob@ claudio@ tb@
+
+2018-07-08 17:15  krw
+
+	* usr.sbin/ldapd/parse.y: Be consistent in warn() and log_warn()
+	  usage when running out of memory.
+
+	  Next step, be correct *and* consistent.
+
+	  ok dennis@ tb@ benno@ schwarze@
+
+2018-07-04 15:21  rob
+
+	* usr.sbin/ldapd/ber.c: More whitespace.
+
+2018-07-04 13:31  rob
+
+	* usr.sbin/ldapd/ber.c: Cleanup some whitespace.
+
+2018-07-04 13:04  rob
+
+	* usr.sbin/ldapd/ber.c: Relocate the update of br_offs from
+	  ber_read() to ber_readbuf() so ber_getc() can call ber_readbuf()
+	  in all cases. This resolves a problem previously encountered with
+	  SNMPv3 authentication, simplifies the code, and completes a full
+	  synchronization of all ber instances.
+
+	  Proposed by claudio@. Problematic use case in snmpd tested by
+	  sthen@ and me.  ldap(s) appear happy as well.
+
+	  looks good to claudio@
+
+2018-07-04 10:05  rob
+
+	* usr.sbin/ldapd/ldape.c: Avoid possible vfprintf NULL errors in
+	  ldap_unbind().
+
+	  Ok benno@
+
+2018-07-03 18:49  rob
+
+	* usr.sbin/ldapd/: ber.c, ber.h: Synchronize ber changes from the
+	  snmpd instance to ldap, ldapd, and ypldap.
+
+	  See usr.sbin/snmpd/ber.c revision 1.24 commit log for a summary
+	  of these changes (e.g. SNMPv2 traps, User-based Security Model,
+	  callback for USM HMAC calculations).
+
+	  There is one final ber piece to copy from the snmpd instance
+	  related to ber_getc() which will be done in a separate diff.
+
+	  "looks good to me" deraadt@
+
+2018-07-01 20:03  rob
+
+	* usr.sbin/ldapd/ber.c: s/constructive/constructed in DPRINTF
+	  output.
+
+2018-06-29 18:28  rob
+
+	* usr.sbin/ldapd/: ber.c, ber.h: Consistent use of copyright
+	  notices.
+
+	  Ok reyk@
+
+2018-06-29 15:18  rob
+
+	* usr.sbin/ldapd/ber.c: Synchronize ber.c and ber.h across ldap,
+	  ldapd, and ypldap, and reduce diff with snmpd. More tweaks to
+	  come once things are fully synchronized.
+
+	  Feedback from claudio and Robert Klein.
+
+	  Ok claudio@
+
+2018-06-28 02:47  gsoares
+
+	* regress/usr.sbin/ldapd/Makefile: unbreak grab the pid from $!
+	  instead of rely on grepping debug log
+
+	  OK landry
+
+2018-06-28 02:41  gsoares
+
+	* usr.sbin/ldapd/index.c: avoid passing NULL to asprintf(3) when
+	  there's no parent dn entry OK jca@
+
+2018-06-27 13:22  rob
+
+	* usr.sbin/ldapd/ber.c: Synchronize correct processing of
+	  BER_TYPE_EOC. Fixes support for empty LDAP passwords. A similar
+	  fix was applied to snmpd in 2010 (rev 1.23).
+
+	  Pointers from Reyk.
+
+	  Ok claudio@
+
+2018-06-11 18:19  denis
+
+	* usr.sbin/ldapd/parse.y: Fix an off-by-one line count when using
+	  include statements.
+
+	  Thanks to otto@ for the initial diff.
+
+	  OK benno@
+
+2018-05-18 12:36  reyk
+
+	* usr.sbin/ldapd/: ldapd.conf.5, parse.y, search.c: Add support for
+	  attribute filter rules on search/read operations.
+
+	  OK jmatthew@
+
+2018-05-16 10:08  reyk
+
+	* usr.sbin/ldapd/search.c: Fix the client search request time and
+	  size limits.
+
+	  ldapd failed when the specified limits were reached instead of
+	  exceeded.  This fixes search queries that define such a limit,
+	  for example with "ldapsearch -z 1".
+
+	  Thanks to Christophe Simon for the bug report, analysis, and fix!
+
+	  OK jmatthew@
+
+2018-05-15 11:19  reyk
+
+	* usr.sbin/: ldapctl/ldapctl.c, ldapd/conn.c, ldapd/control.c,
+	  ldapd/filter.c, ldapd/ldapd.c, ldapd/ldapd.h, ldapd/ldape.c,
+	  ldapd/log.c, ldapd/log.h, ldapd/logmsg.c, ldapd/namespace.c,
+	  ldapd/search.c, ldapd/util.c, ldapd/validate.c: Fix format string
+	  errors in log messages and update ldapd to use relayd's log.c
+
+	  OK benno@ jmatthew@
+
+2018-05-14 11:10  reyk
+
+	* usr.sbin/ldapd/ldapd.conf.5: Remove duplicated word ("scope
+	  scope").
+
+	  Pointed out by jmc@
+
+2018-05-14 07:53  reyk
+
+	* usr.sbin/ldapd/: auth.c, ldapd.conf.5, ldapd.h, modify.c,
+	  parse.y, search.c: Add support to filter on attributes.
+
+	  This can be used to allow users to change their password (and a
+	  few other things) but not their entire dn. For example:
+
+		  allow read access to any by self
+		  allow write access to any attribute userPassword by self
+
+	  This is currently only supported for "write" (modify, add,
+	  delete) and not "read" (search) filter rules.
+
+	  OK jmatthew@
+
+2018-04-26 14:12  krw
+
+	* usr.sbin/ldapd/parse.y: Plug leak in error case of the common
+	  'varset' implementations.
+
+	  ok benno@
+
+2018-04-26 12:42  guenther
+
+	* usr.sbin/ldapd/uuid.c: Use <fcntl.h> instead of <sys/file.h> for
+	  open() and friends.  Delete a bunch of unnecessary #includes and
+	  sort to match style(9) while doing the above cleanup.
+
+	  ok deraadt@ krw@
+
+2018-02-08 18:02  jca
+
+	* usr.sbin/ldapd/: ber.c, ber.h, conn.c, util.c: Kill ber.c support
+	  for direct fd read/writes
+
+	  This mechanism is already unused and annotated with lots of
+	  XXX's, no need to keep it around.  ok claudio@
+
+2018-01-15 20:38  bluhm
+
+	* share/mk/bsd.regress.mk: We have no deprecated regress variables
+	  in our tree.	Remove the compatibility layer.
+
+2017-08-28 06:00  florian
+
+	* usr.sbin/ldapd/parse.y: 65535 is a valid port to listen on.
+	  Off-by-one pointed out by and diff from Kris Katterjohn
+	  katterjohn AT gmail, thanks! chris@ pointed out that more than
+	  httpd(8) is effected.  OK gilles@
+
+2017-07-28 12:58  florian
+
+	* usr.sbin/ldapd/modify.c: One negation is enough; pointed out by
+	  clang.
+
+	  OK gsoares who says that he forgot about the same diff for months
+	  and that millert@ had OK'ed it.
+
+2017-07-04 15:52  bluhm
+
+	* usr.sbin/ldapd/evbuffer_tls.c: It does not make sense to use
+	  ioctl(FIONREAD) with TLS as libtls has already read the buffer
+	  from kernel to user land.  I have blindly copied this code from
+	  libevent for syslogd(8) TLS, remove it together with the bug.  It
+	  caused hangs in ldapd(8).  report, analysis, testing, OK Seiya
+	  Kawashima, Robert Klein, gsoares@
+
+2017-07-03 22:21  espie
+
+	* usr.sbin/ldapctl/Makefile: no need to generate y.tab.h if nothing
+	  uses it, set YFLAGS to nothing instead of CLEANFILES += y.tab.h
+
+	  okay millert@
+
+2017-06-25 22:06  bluhm
+
+	* regress/usr.sbin/ldapd/Makefile: Do not run .END cleanup during
+	  clean, cleandir, obj in ldapd regress.
+
+2017-05-28 15:48  jmatthew
+
+	* usr.sbin/ldapd/syntax.c: Fix checks for seconds and timezones in
+	  generalized times.  Fixing the CHECK_RANGE macro in r1.4 revealed
+	  that the seconds check accidentally relied on the macro being
+	  broken.  While looking into this I noticed that the timezone
+	  check was also wrong, treating the timezone as optional for
+	  generalized times.
+
+	  investigation and diff mostly by Seiya Kawashima.
+
+2017-05-26 21:23  sthen
+
+	* usr.sbin/ldapd/btree.c: Don't overflow uint16 when the filesystem
+	  block size is >32K.  Reported and initial diagnosis from Allan
+	  Streib, help/ok millert deraadt
+
+2017-04-13 14:48  deraadt
+
+	* usr.sbin/ldapd/syntax.c: multi-statement CHECK_RANGE() macro
+	  isn't safe for all placements, and needs to use "do {} while 0"
+	  idiom; all callers need repair also.	Discovered by jsg
+
+2017-04-06 12:22  gsoares
+
+	* usr.sbin/ldapd/parse.y: use memset() instead of bzero() OK
+	  jmatthew
+
+2017-03-21 12:06  bluhm
+
+	* usr.sbin/ldapd/log.c: From a syslog perspective it does not make
+	  sense to log fatal and warn with the same severity.  Switch
+	  log_warn() to LOG_ERR and keep fatal() at LOG_CRIT.  OK reyk@
+	  florian@
+
+2017-03-09 10:13  fcambus
+
+	* include/bsd_auth.h: As per style.9, prototypes should not have
+	  variable names associated with the types.
+
+	  OK jca@
+
+2017-03-03 20:26  bluhm
+
+	* usr.sbin/ldapd/evbuffer_tls.c: Internally libssl uses 16k buffer,
+	  the libevent TLS wrapper uses 4k read buffer.  This can hang
+	  ldapd(8).  Setting both to 16k improves the situation.  report
+	  Seiya Kawashima; feedback Robert Klein; test and OK gsoares@
+
+2017-03-01 00:53  gsoares
+
+	* usr.sbin/ldapd/: imsgev.c, imsgev.h: add missing rcsid
+
+2017-03-01 00:50  gsoares
+
+	* usr.sbin/ldapd/ldapd.c: move up getpid() and getpwnam(LDAP USER)
+	  checks to fail earlier and also make them consistent with other
+	  daemons.
+
+	  while here: - fix getpwnam(LDAPD_USER) errx() - no need to
+	  skip_chroot
+
+	  ok jmatthew@
+
+2017-02-24 14:28  gsoares
+
+	* usr.sbin/ldapd/: ldapd.c, ldapd.h, ldape.c: Implement fork+exec
+	  model
+
+	  OK jmatthew@
+
+2017-02-22 14:40  gsoares
+
+	* usr.sbin/ldapd/btest.c: print a formatted errx() string instead
+	  of segfault, by checking argc correctly.
+
+	  ok guenther@
+
+2017-02-22 14:36  gsoares
+
+	* regress/usr.sbin/ldapd/Makefile: ldapd regress tests depends on
+	  openldap-client, check if that package is installed, otherwise
+	  print a warning and skip them but not fail.
+
+	  requested by/ok mpi@
+
+2017-02-11 20:40  guenther
+
+	* usr.sbin/ldapd/: attributes.c, ber.c, ber.h, modify.c: Correct
+	  handling of requests to delete individual attribute values.
+
+	  reported by ZHANG Huangbin (zhb (at) iredmail.org) fix by Robert
+	  Klein (roklein (at) roklein.de)
+
+2017-01-26 02:06  jmatthew
+
+	* regress/usr.sbin/ldapd/Makefile: Each entry in REGRESS_TARGETS is
+	  run in a separate make process, so the .END target will kill
+	  ldapd after each one.  To compensate, make each test target
+	  depend on bootstrap to ensure ldapd is running.  In .END, remove
+	  the pid file after killing ldapd so reduce noise.
+
+2017-01-20 12:08  benno
+
+	* usr.sbin/ldapd/log.c: unbreak tree
+
+2017-01-20 11:55  benno
+
+	* usr.sbin/: ldapctl/Makefile, ldapctl/ldapctl.c, ldapd/Makefile,
+	  ldapd/attributes.c, ldapd/auth.c, ldapd/conn.c, ldapd/control.c,
+	  ldapd/filter.c, ldapd/index.c, ldapd/ldapd.c, ldapd/ldapd.h,
+	  ldapd/ldape.c, ldapd/log.c, ldapd/log.h, ldapd/logmsg.c,
+	  ldapd/modify.c, ldapd/namespace.c, ldapd/parse.y, ldapd/schema.c,
+	  ldapd/search.c, ldapd/util.c, ldapd/validate.c: work on making
+	  log.c similar in all daemons:
+
+	  move daemon-local functions into new logmsg.c, and reduce the
+	  (mostly whitespace) differences so that log.c's can be diffed
+	  easily.
+
+	  ok krw@ jmatthew@
+
+2017-01-20 09:54  deraadt
+
+	* usr.sbin/: ldapctl/Makefile, ldapd/Makefile: Correctly list all
+	  libraries required.
+
+2017-01-17 22:10  krw
+
+	* usr.sbin/ldapd/log.c: Nuke some whitespace that keeps poking me
+	  in the eye as I try to steal code.
+
+2017-01-09 14:04  krw
+
+	* usr.sbin/ldapd/control.c: Replace hand-rolled for(;;) traversal
+	  of ctl_conns TAILQ with TAILQ_FOREACH().
+
+	  No intentional functional change.
+
+	  ok reyk@
+
+2017-01-05 13:53  krw
+
+	* usr.sbin/ldapd/parse.y: Replace hand-rolled for(;;) emptying of
+	  'symhead' TAILQ with more modern TAILQ_FOREACH_SAFE().
+
+	  No intentional functional change.
+
+	  ok millert@ bluhm@ gilles@
+
+2017-01-05 12:42  krw
+
+	* usr.sbin/ldapd/parse.y: Replace symset()'s hand-rolled for(;;)
+	  traversal of 'symhead' TAILQ with more modern TAILQ_FOREACH().
+	  This what symget() was already doing.
+
+	  Add paranoia '{}' around body of symget()'s TAILQ_FOREACH().
+
+	  No intentional functional change.
+
+	  ok bluhm@ otto@
+
+2016-12-02 05:52  jmatthew
+
+	* usr.sbin/ldapd/btree.c: Fix leaks by freeing 'path' and
+	  'lru_queue' in btree_close().  From Jon Mayo, via Tim Kuijsten
+
+	  ok mikeb@
+
+2016-11-30 07:57  mestre
+
+	* usr.sbin/ldapd/parse.y: Check return value of
+	  tls_config_set_protocols(3) and bail out in case of failure
+
+	  Feedback and OK jsing@
+
+2016-10-17 14:03  jca
+
+	* usr.sbin/ldapd/ldapd.conf.5: Tweak /etc/ldap/certs/ FILES entry.
+
+2016-10-17 13:49  jca
+
+	* usr.sbin/ldapd/ldapd.conf.5: In FILES mention /etc/ldapd.conf
+	  first, then /etc/ldap/ entries
+
+2016-10-17 13:44  jca
+
+	* usr.sbin/ldapd/ldapd.conf.5: Fix a few mistakes and add a FILES
+	  entry for /etc/ldap/certs
+
+	  From Rob Pierce, help & ok jmc@
+
+2016-09-28 18:00  bluhm
+
+	* regress/usr.sbin/ldapd/Makefile: The ldap regression test should
+	  behave more like the other tests.  So use REGRESS_TARGETS
+	  provided by bsd.regress.mk.  OK landry@
+
+2016-09-18 21:00  bluhm
+
+	* regress/usr.sbin/ldapd/Makefile: Test should print SKIPPED if a
+	  package is missing.
+
+2016-09-10 07:26  landry
+
+	* regress/usr.sbin/ldapd/run-tests.pl: Cleanup commented lines, and
+	  only print the DN of entries
+
+2016-09-10 06:45  landry
+
+	* regress/usr.sbin/ldapd/Makefile: Improve Makefile by using
+	  ${.OBJDIR} and stop creating files in ${.CURDIR}. Don't start the
+	  server in .BEGIN - make obj should only create the symlink. Add
+	  CLEANFILES for proper cleaning.
+
+2016-09-05 06:20  landry
+
+	* regress/usr.sbin/ldapd/Makefile: Add purge to the all: target and
+	  comment out cpan for now
+
+2016-09-01 14:59  landry
+
+	* regress/usr.sbin/ldapd/: Makefile, common.pl, dit-example.ldif,
+	  ldapd.conf, nldapd.conf, run-tests.pl, out/adding.log,
+	  out/empty.log, out/example.log: Add basic regress tests for
+	  ldapd.
+
+	  - first pass of tests adding a DIT, then searching in it - second
+	  pass of tests runs Net::LDAP regress suite against ldapd (not
+	  all tests are passing, and that requires Net::LDAP installed and
+	  distfiles present on the system)
+
+2016-08-27 01:42  guenther
+
+	* usr.sbin/ldapd/uuid.c: Pull in <sys/time.h> for gettimeofday()
+
+	  ok deraadt@
+
+2016-07-13 16:35  jsing
+
+	* usr.sbin/ldapd/parse.y: Adjust existing tls_config_set_cipher()
+	  callers for TLS cipher group changes - map the previous
+	  configuration to the equivalent in the new groups. This will be
+	  revisited post release.
+
+	  Discussed with beck@
+
+2016-06-21 21:35  benno
+
+	* usr.sbin/ldapd/parse.y: do not allow whitespace in macro names,
+	  i.e. "this is" = "a variable".  change this in all config parsers
+	  in our tree that support macros.  problem reported by sven
+	  falempin.
+
+	  feedback from henning@, stsp@, deraadt@ ok florian@ mikeb@
+
+2016-05-26 15:51  millert
+
+	* lib/libc/gen/authenticate.c: Use S_ISDIR instead of doing it by
+	  hand.  No binary change.
+
+2016-05-01 10:40  tb
+
+	* usr.sbin/ldapctl/Makefile: unbreak the tree:
+
+	  after moving ldapd to the libtls api, ldapctl needs to link
+	  against libtls instead of libcrypto
+
+	  ok krw@, jmatthew@
+
+2016-05-01 00:32  jmatthew
+
+	* usr.sbin/ldapd/: Makefile, conn.c, evbuffer_tls.c,
+	  evbuffer_tls.h, ldapd.c, ldapd.h, ldape.c, parse.y, ssl.c,
+	  ssl_privsep.c: convert ldapd to use the libtls api, bringing in a
+	  copy of the evbuffer_tls code from syslogd.
+
+	  ok beck@ benno@
+
+2016-03-20 00:01  krw
+
+	* usr.sbin/ldapd/btree.c: Currently we have about a 50/50 split
+	  over fcntl(n, F_GETFL [,0]) idioms.
+
+	  Adopt the more concise fcntl(n, F_GETFL) over fcntl(n, F_GETFL,
+	  0) where it is obvious further investigation will not yield and
+	  even better way.
+
+	  Obviousness evaluation and ok guenther@
+
+2016-02-04 12:48  jca
+
+	* usr.sbin/ldapd/: ldapd.c, namespace.c: Minor ldapd -r tweaks
+
+	  - fix style - the string pointed to by datadir shouldn't be
+	  modified, use const - initialize datadir at compile time - in
+	  namespace.c, move the extern datadir decl above local decls
+
+2016-02-02 18:18  jca
+
+	* usr.sbin/ldapctl/ldapctl.c: Try to be user-friendly and check
+	  early that the datadir is somewhat sane.
+
+	  Inspired by a diff by gsoares@, ok landry@ gsoares@
+
+2016-02-02 17:39  jmc
+
+	* usr.sbin/ldapctl/ldapctl.8: tweak previous;
+
+2016-02-02 14:59  gsoares
+
+	* usr.sbin/ldapd/ldapd.c: use stat(2) instead of chdir(2) to check
+	  if given the directory is valid.  OK landry@ jca@
+
+2016-02-02 12:47  jca
+
+	* usr.sbin/ldapctl/: ldapctl.8, ldapctl.c: Implement ldapctl -r
+	  datadir; ok sthen@ landry@
+
+2016-02-01 22:04  jmc
+
+	* usr.sbin/ldapd/ldapd.8: some -r fixes;
+
+2016-02-01 20:00  landry
+
+	* usr.sbin/ldapd/: ldapd.8, ldapd.c, namespace.c: Add -r argument
+	  to ldapd, to specify an alternative directory to store/read the
+	  database, still defaulting to /var/db/ldap.
+
+	  This will allow running totally separate instances, to be used by
+	  an upcoming regress suite for example.
+
+	  With a tweak from gsoares@ to check that the directory exists.
+	  ok dlg@ semarie@ jca@
+
+2016-01-17 08:13  landry
+
+	* usr.sbin/ldapd/: control.c, ldapd.c: Properly remove unix sockets
+	  (control & listening) upon exit of the parent process.
+
+	  Child process was killed by pledge because it tried to remove the
+	  control socket and didnt have cpath - anyway it couldnt remove it
+	  since it had chrooted..
+
+	  ok jmatthew@ deraadt@
+
+2015-12-30 15:59  benno
+
+	* usr.sbin/ldapd/ssl.c: SSL_CTX_free() and SSL_free() check for
+	  null so dont do it in ldapd ok jung@ tedu@ deraadt@
+
+2015-12-28 22:08  mmcc
+
+	* lib/libc/gen/auth_subr.c: Remove NULL-checks before free() and a
+	  few related dead assignments.
+
+	  ok and valuable input from millert@
+
+2015-12-24 17:47  mmcc
+
+	* usr.sbin/ldapd/: auth.c, ber.c, btest.c, btree.c, control.c,
+	  index.c, ldapd.c, ldape.c, modify.c, namespace.c, search.c,
+	  util.c: bzero -> memset. No binary change.
+
+2015-12-24 17:23  mmcc
+
+	* usr.sbin/ldapd/search.c: use strndup instead of
+	  malloc/strncpy/nul
+
+	  ok krw@
+
+2015-12-22 08:35  mmcc
+
+	* usr.sbin/ldapd/btree.c: commiting -> committing
+
+2015-12-10 18:40  mmcc
+
+	* usr.sbin/ldapd/: ber.c, ssl.c: Remove NULL-checks before free().
+	  ok tb@
+
+2015-12-05 16:26  claudio
+
+	* usr.sbin/ldapd/ber.c: #include <string.h> not strings.h
+
+2015-12-05 13:19  claudio
+
+	* usr.sbin/ldapctl/ldapctl.c: EAGAIN handling for imsg_read. OK
+	  henning@ benno@
+
+2015-11-24 22:03  millert
+
+	* lib/libc/gen/: auth_subr.c, authenticate.c: Use reentrant
+	  versions of getpw{nam,uid} and getgr{nam,gid} within libc to
+	  avoid reusing the static buffers returned by the non-reentrant
+	  versions.  Since this is inside libc we can use constants for the
+	  buffer sizes instead of having to call sysconf().  OK guenther@
+	  deraadt@
+
+2015-11-02 17:03  mmcc
+
+	* lib/libc/gen/auth_subr.c: (struct timezone *)NULL -> NULL
+
+2015-11-02 06:32  jmatthew
+
+	* usr.sbin/ldapd/: conn.c, control.c, ldapd.c, ldapd.h, ldape.c,
+	  util.c: use SOCK_NONBLOCK instead of fcntl
+
+	  ok dlg@
+
+2015-11-02 04:48  jmatthew
+
+	* usr.sbin/ldapd/: ldapd.c, ldape.c: Both ldapd processes need
+	  "stdio" to talk to clients and each other.  The parent process
+	  opens database files ("rpath wpath cpath"), sends fds to the
+	  child ("sendfd"), and does bsd auth on behalf of the child
+	  ("getpw proc exec").
+
+	  The child process accepts client connections ("inet unix"),
+	  receives fds from the parent ("recvfd") and locks database files
+	  ("flock").
+
+	  ok deraadt@
+
+2015-11-01 07:39  jmatthew
+
+	* usr.sbin/ldapctl/ldapctl.c: ldapctl has two modes of operation,
+	  one where it operates on the btree files directly, in which it
+	  pledges "stdio rpath wpath cpath flock", and one where it talks
+	  to ldapd over a unix socket, in which it pledges "stdio" after
+	  opening the socket.
+
+	  ok deraadt@
+
+2015-10-23 04:52  guenther
+
+	* lib/libc/gen/auth_subr.c: Fix waitpid() loop again: do the errno
+	  check only if waitpid() returns -1 and check WIFEXITED() only if
+	  it returns != -1.  Delete the logging of errors other than
+	  ECHILD: EFAULT and EINVAL are impossible here.
+
+	  ok deraadt@ millert@
+
+2015-10-22 23:55  mmcc
+
+	* lib/libc/gen/auth_subr.c: Cast ctype function arguments to
+	  unsigned char.
+
+	  ok guenther@
+
+2015-10-11 03:23  guenther
+
+	* usr.sbin/ldapd/syntax.c: The <ctype.h> is*() interfaces expect
+	  EOF or an unsigned char; cast to (unsigned char) as required
+
+	  found by Michael McConville (mmcconv1 (at) sccs.swarthmore.edu)
+	  w/Coccinelle
+
+2015-09-14 16:09  tedu
+
+	* lib/libc/gen/: auth_subr.c, authenticate.c: remove null check
+	  before free. from Michael McConville ok semarie
+
+2015-09-12 15:20  guenther
+
+	* lib/libc/gen/: auth_subr.c, authenticate.c: Wrap <bsd_auth.h> so
+	  that calls go direct and the symbols are all weak
+
+2015-09-03 04:27  daniel
+
+	* lib/libc/gen/auth_subr.c: no more gcc2.
+
+	  ok deraadt@
+
+2015-08-31 02:53  guenther
+
+	* lib/libc/gen/: auth_subr.c, authenticate.c: Add framework for
+	  resolving (pun intended) libc namespace issues, using wrapper .h
+	  files and asm labels to let internal calls resolve directly and
+	  not be overridable or use the PLT.  Then, apply that framework to
+	  most of the functions in stdio.h, string.h, err.h, and wchar.h.
+	  Delete the should-have-been-hidden-all-along _v?(err|warn)[cx]?
+	  symbols while here.
+
+	  tests clean on i386, amd64, sparc64, powerpc, and mips64
+
+	  naming feedback from kettenis@ and millert@ ok kettenis@
+
+2015-08-27 13:33  dlg
+
+	* lib/libc/gen/authenticate.c: use explicit_bzero to clear some
+	  memory that had creds in it instead of memset.
+
+	  ok deraadt@ millert@
+
+2015-06-03 02:24  millert
+
+	* usr.sbin/ldapd/: btree.c, index.c, ldape.c, search.c: Do not
+	  assume that asprintf() clears the pointer on failure, which is
+	  non-portable.  Also add missing asprintf() return value checks.
+	  OK deraadt@ guenther@ doug@
+
+2015-02-12 00:30  pelikan
+
+	* usr.sbin/ldapd/ber.c: ber_printf_elements should return NULL if
+	  any of its parts fail.
+
+	  Leave the error handling up to its callers.
+
+	  ok reyk
+
+2015-02-11 04:04  pelikan
+
+	* usr.sbin/ldapd/modify.c: initialize a variable in case "goto
+	  done" makes us compare it
+
+	  found by clang, ok henning
+
+2015-01-28 15:50  reyk
+
+	* usr.sbin/ldapd/ssl_privsep.c: Remove ssl_by_mem_ctrl() and
+	  x509_mem_lookup to unbreak the build.  It caused a conflict with
+	  a new function in LibreSSL but wasn't even used by ldapd.  No
+	  functional change.
+
+	  OK deraadt@
+
+2015-01-16 16:04  deraadt
+
+	* usr.sbin/ldapd/: ber.c, btree.c, control.c, imsgev.c, ldapd.c,
+	  ldapd.h, ldape.c, ssl.c: change to <limits.h> universe.  The only
+	  changes in the binary are due to the heavy use of assert.  ok
+	  millert
+
+2014-11-20 05:51  jsg
+
+	* usr.sbin/ldapd/parse.y: Don't allow embedded nul characters in
+	  strings.  Fixes a pfctl crash with an anchor name containing an
+	  embedded nul found with the afl fuzzer.
+
+	  pfctl parse.y patch from and ok deraadt@
+
+2014-11-16 19:04  bluhm
+
+	* usr.sbin/ldapd/schema.c: Convert the logic in the error function
+	  of the ldap schema parser.  Instead of creating a temporary
+	  format string, create a temporary message.  OK doug@
+
+2014-11-14 03:20  doug
+
+	* usr.sbin/ldapd/parse.y: Add gcc printf format attributes to
+	  yyerror() in parse.y files.  No yyerror() calls needed to be
+	  changed.
+
+	  ok bluhm@
+
+2014-11-03 18:44  bluhm
+
+	* usr.sbin/ldapd/parse.y: Convert the logic in yyerror().  Instead
+	  of creating a temporary format string, create a temporary
+	  message.  OK claudio@
+
+2014-09-21 05:33  daniel
+
+	* usr.sbin/ldapd/: auth.c, filter.c, modify.c, parse.y: eliminate
+	  the use of a gcc C extension (conditionals with omitted
+	  operands).
+
+	  ok deraadt@
+
+2014-09-13 16:06  doug
+
+	* usr.sbin/ldapd/namespace.c: Replace all queue *_END macro calls
+	  except CIRCLEQ_END with NULL.
+
+	  CIRCLEQ_* is deprecated and not called in the tree.  The other
+	  queue types have *_END macros which were added for symmetry with
+	  CIRCLEQ_END.	They are defined as NULL.  There's no reason to
+	  keep the other *_END macro calls.
+
+	  ok millert@
+
+2014-08-25 07:50  doug
+
+	* lib/libc/gen/auth_subr.c, usr.sbin/ldapd/ldapd.c: Delete secret
+	  or secret-derived data with explicit_bzero.
+
+	  concept ok deraadt@ diff looks ok tedu@
+
+2014-08-11 08:21  jmc
+
+	* usr.sbin/ldapd/ldapd.8: add a caveat about databases; From:
+	  Matthew Weigel
+
+	  ok gilles
+
+2014-07-19 18:15  miod
+
+	* share/mk/bsd.regress.mk: Explicitely check the value of
+	  REGRESS_SKIP_SLOW rather than its emptyness, for it defaults to a
+	  non-empty value; Doug Hogan
+
+2014-07-16 20:07  okan
+
+	* usr.sbin/ldapd/Makefile: zap trailing newlines; "go for it"
+	  deraadt
+
+2014-07-13 16:43  krw
+
+	* usr.sbin/ldapd/imsgev.c: When the three possible return values
+	  are -1, 0, and 1, != 1 is the same as <= 0. And the latter is the
+	  normal idiom so use that.
+
+	  ok claudio@ henning@
+
+2014-07-11 21:20  deraadt
+
+	* etc/examples/ldapd.conf: Move more files into the examples
+	  directory...
+
+2014-07-11 06:06  jsg
+
+	* usr.sbin/ldapd/ssl.c: add additional includes required to build
+	  with -DOPENSSL_NO_DEPRECATED
+
+2014-06-11 18:00  jmc
+
+	* usr.sbin/ldapd/ldapd.conf.5: rfc 4512, not 4712; From: route
+	  dylanharris org
+
+2014-05-25 17:47  tedu
+
+	* lib/libc/gen/auth_subr.c: use calloc, from Benjamin Baier
+
+2014-04-21 11:27  guenther
+
+	* include/bsd_auth.h: Use internal '__' names for __attributes__ in
+	  public headers
+
+2014-04-15 20:55  miod
+
+	* usr.sbin/ldapd/Makefile: Remove workarounds for ld reaching
+	  MAXDSIZ on vax, now that MAXDSIZ is more comfortable.  Reminded
+	  by brad@
+
+2014-01-22 00:21  henning
+
+	* usr.sbin/ldapd/parse.y: relax the cfg file secrecy check slightly
+	  to allow group readability default permissions and mtree NOT
+	  changed.  prodded by benno, ok phessler benno jmatthew theo
+	  pelikan florian
+
+2013-11-26 11:33  henning
+
+	* usr.sbin/ldapd/imsgev.c: deal with msgbuf_write EAGAIN, ok gilles
+	  benno
+
+2013-11-25 12:56  benno
+
+	* usr.sbin/ldapd/parse.y: use u_char for buffers in yylex, for
+	  ctype calls found by millert@, ok deraadt@
+
+2013-11-24 23:51  deraadt
+
+	* lib/libc/gen/: auth_subr.c, authenticate.c: most obvious unsigned
+	  char casts for ctype ok jca krw ingo
+
+2013-11-23 18:02  deraadt
+
+	* usr.sbin/ldapd/: syntax.c, util.c: unsigned char casts for ctype
+	  ok jca
+
+2013-11-14 20:48  deraadt
+
+	* usr.sbin/ldapctl/ldapctl.c: cope with the EAGAIN API change for
+	  msgbuf_write() ok benno
+
+2013-11-02 13:31  deraadt
+
+	* usr.sbin/ldapd/: btree.c, conn.c, control.c, ldapd.c, ldape.c,
+	  log.c, util.c: bunch of format string cleanups, removing %i,
+	  signed vs unsigned, and even a few long long's ok jmatthew
+
+2013-09-30 12:02  millert
+
+	* lib/libc/gen/: auth_subr.c, authenticate.c: Use PATH_MAX,
+	  NAME_MAX and LOGIN_NAME_MAX not MAXPATHNAMELEN, MAXNAMLEN or
+	  MAXLOGNAME where possible.  OK deraadt@
+
+2013-09-07 10:46  fgsch
+
+	* usr.sbin/ldapd/ssl.c: Change default ciphers to HIGH:!aNULL.
+	  reyk@ ok
+
+2013-08-20 10:13  mikeb
+
+	* usr.sbin/ldapd/ldapd.conf.5: replace a predefined string with a
+	  mdoc macro;  ok jmc, schwarze, sobrado
+
+2013-08-14 08:39  jmc
+
+	* usr.sbin/ldapd/ldapd.8: some Bx/Ox conversion; From: Jan Stary
+
+2013-08-06 19:05  miod
+
+	* usr.sbin/ldapd/Makefile: Switch vax to gcc 3.3.6.
+
+2013-08-01 20:43  kettenis
+
+	* share/mk/bsd.regress.mk: Don't error out if there are no
+	  regression for a particular architecture in a subdirectory.
+
+2013-07-16 11:13  schwarze
+
+	* usr.sbin/ldapd/btree.3: use .Mt for email addresses; from Jan
+	  Stary <hans at stare dot cz>; ok jmc@
+
+2013-06-29 09:08  jmc
+
+	* usr.sbin/ldapd/ldapd.conf.5: do not use Sx for sections outwith
+	  the page; man4 still to go...
+
+2013-06-14 22:38  halex
+
+	* share/mk/bsd.regress.mk: introduce REGRESS_FAIL_EARLY to stop
+	  regression tests at first encountered failure
+
+	  ok phessler@ bluhm@
+
+2013-01-28 13:42  gilles
+
+	* usr.sbin/ldapd/ssl.c: ssl.c is a very old copy of smtpd's and
+	  didn't catch up the bump of the DH prime parameter. bring the
+	  update from smtpd...
+
+	  openldap client now accepts to connect to a ssl-enabled ldapd
+	  server, issue reported by Joel Carnat and Vadim Agarkov
+
+	  diff ok mikeb@ and martinh@
+
+2013-01-08 02:26  deraadt
+
+	* lib/libc/gen/auth_subr.c: More int's that should be size_t for
+	  strlen() use ok millert
+
+2012-11-12 14:01  gsoares
+
+	* usr.sbin/ldapd/schema.c: fix a potential memory leak; OK martinh@
+	  sthen@
+
+2012-09-26 16:19  jmc
+
+	* usr.sbin/ldapd/: ldapd.8, ldapd.conf.5: last stage of rfc
+	  changes, using consistent Rs/Re blocks, and moving the references
+	  into a STANDARDS section;
+
+2012-06-16 00:08  jmatthew
+
+	* usr.sbin/ldapd/: conn.c, control.c, imsgev.c, imsgev.h, ldapd.c,
+	  ldapd.h, ldape.c, namespace.c, util.c: Protect against fd
+	  exhaustion when reopening database files.  Only accept client or
+	  control connections when there are at least 8 fds available, and
+	  close a connection before calling imsg_read if it would be unable
+	  to accept an fd from the parent process.
+
+	  ok gilles@
+
+2012-04-24 14:56  jmc
+
+	* usr.sbin/ldapd/ldapd.conf.5: take a stab at documenting when
+	  arguments need quoted, and valid macro characters;
+
+	  prompted by a diff from robert peichaer org
+
+	  thanks gilles and henning for feedback ok deraadt zinke
+
+2012-04-11 08:31  deraadt
+
+	* usr.sbin/ldapd/: conn.c, control.c, ldapd.h, ldape.c: rate
+	  limiting of accept() in various cases.  Testing by jmatthew.
+	  there maybe still be a corner case where it needs one more file
+	  descriptor beyond the limit..
+
+2012-04-01 16:20  deraadt
+
+	* usr.sbin/ldapd/ldape.c: use our umask() before AF_UNIX bind()
+	  semantics; ok pyr
+
+2011-06-23 20:35  sthen
+
+	* usr.sbin/ldapd/ldapd.conf.5: Use a common text explaining how the
+	  various configuration parsers using the standard OpenBSD-style
+	  parse.y handle continuing lines with backslashes, paying
+	  particular attention to how comments are handled (which can cause
+	  nasty side-effects if you're not expecting it).
+
+	  Most wording from jmc@, with suggestions from fgsch@, marc@,
+	  Richard Toohey, patrick keshishian and Florian Obser, ok jmc@.
+
+2011-01-28 09:26  martinh
+
+	* usr.sbin/ldapd/: ldapd.8, ldapd.conf.5: document available
+	  authentication types and formats.  with tweaks from jmc@
+
+2011-01-08 19:42  martinh
+
+	* usr.sbin/ldapd/ber.c: Change detection of indefinite BER lenghts
+	  (which is not allowed). Only a length byte of 0x80 is now treated
+	  as meaning indefinite. This fixes empty sets sent by the winldap
+	  api. Makes authentication through pGina work.
+
+	  with william@
+
+2010-12-17 07:17  martinh
+
+	* usr.sbin/ldapd/auth.c: Unbreak simple passwords with SHA and
+	  salted SHA hashes. Revision 1.7 introduced a bug that reversed
+	  the check. Found by MERIGHI Marcus.
+
+2010-11-26 14:44  martinh
+
+	* usr.sbin/ldapd/index.c: Unbreak re-indexing by checking if an
+	  index entry already exists.
+
+2010-11-10 08:00  martinh
+
+	* usr.sbin/ldapd/: conn.c, ldapd.8, ldapd.c, ldapd.h, ldape.c,
+	  log.c, search.c: Make -dvv flags produce debug traces of decoded
+	  BER messages on stderr.  Also shows a hexdump of the input buffer
+	  if BER decoding fails.  Useful when debugging protocol issues.
+
+2010-11-10 07:32  martinh
+
+	* usr.sbin/ldapd/log.c: Prefix debug logging on stderr with time
+	  and pid, like syslog.
+
+2010-11-05 08:17  martinh
+
+	* usr.sbin/ldapd/search.c: If the base DN in a search request
+	  doesn't exist, return early.
+
+2010-11-05 07:49  martinh
+
+	* usr.sbin/ldapd/conn.c: When draining the input buffer of more
+	  than two complete requests, an additional incomplete request
+	  would be truncated. This fixes the number of bytes consumed from
+	  the input buffer.
+
+2010-11-05 07:18  martinh
+
+	* usr.sbin/ldapd/ldapd.8: Change to read better after suggestion
+	  from jmc.
+
+2010-11-04 20:48  martinh
+
+	* usr.sbin/ldapd/ldapd.8: Only LDAP version 3 is implemented.
+
+2010-11-04 20:22  martinh
+
+	* usr.sbin/ldapd/ldapd.conf.5: Document the syntax of schema files.
+	  Only a brief synopsis of the attribute type and object class
+	  syntax is given, the rest is referred to the RFC.
+
+2010-11-04 15:35  martinh
+
+	* usr.sbin/ldapd/: matching.c, schema.c, schema.h, search.c:
+	  Publish matching rules in the cn=schema subentry as the
+	  matchingRules attribute. This is an operational attribute and
+	  only returned if explicitly asked for. Required by RFC 4517.
+
+2010-11-03 17:30  martinh
+
+	* usr.sbin/ldapd/btree.3: Update the internal btree documentation
+	  to reflect the current api.
+
+2010-11-03 14:17  martinh
+
+	* usr.sbin/: ldapctl/Makefile, ldapd/Makefile, ldapd/matching.c,
+	  ldapd/schema.c, ldapd/schema.h: Validate matching rules against
+	  attribute syntaxes. All matching rules from RFC 4517 are
+	  recognized, except the optional wordMatch and keywordMatch.
+
+	  Requires a current core.schema file.
+
+2010-11-03 12:01  martinh
+
+	* usr.sbin/ldapd/schema/core.schema: caseExactIA5Match is not an
+	  appropriate matching rule for directory strings (syntax oid
+	  1.3.6.1.4.1.1466.115.121.1.15). Use caseExactMatch instead.
+	  Prepares for upcoming validation of matching rules.
+
+2010-11-03 11:21  martinh
+
+	* usr.sbin/ldapd/ldapd.conf.5: An index can now also be used for a
+	  presence filter.
+
+2010-11-03 10:33  martinh
+
+	* usr.sbin/ldapd/: filter.c, ldapd.h, search.c: Evaluate filters
+	  according to the three-valued logic of X.511, as required by RFC
+	  4511. A filter term can now be evaluated as undefined if the
+	  attribute description is not recognized, the attribute type
+	  doesn't define the appropriate matching rule, or the filtering is
+	  not implemented.
+
+	  This also implements the NOT filter in the query planner.
+
+2010-11-02 19:39  martinh
+
+	* usr.sbin/ldapd/ldapd.8: Clarify the current state of ldapd as not
+	  fully LDAPv3 compliant.
+
+2010-10-26 01:58  william
+
+	* usr.sbin/ldapd/ldapd.c: Allow the userPassword attribute to
+	  specify a login class when using simple binds with BSD
+	  Authentication, using '#' as the delimiter, such as:
+
+	  userPassword: {BSDAUTH}username#loginclass
+
+	  Useful for auth modules that require parameters such as
+	  login_radius.
+
+	  ok martinh
+
+2010-10-19 09:34  martinh
+
+	* usr.sbin/ldapd/attributes.c: Fix a segmentation fault when adding
+	  an attribute to an empty entry.
+
+2010-10-19 09:20  martinh
+
+	* usr.sbin/ldapd/ber.c: When checking if the input buffer is large
+	  enough to hold an LDAP request, compare with available space, not
+	  the total space. This fixes rejection of messages when there are
+	  multiple requests queued in the input buffer.
+
+2010-10-19 09:10  martinh
+
+	* usr.sbin/ldapd/: auth.c, conn.c, ldapd.h: Remember the bind DN
+	  after BSD authentication. This makes access control work for SASL
+	  and BSDAUTH binds as it does for simple binds.
+
+2010-10-18 13:29  sthen
+
+	* usr.sbin/ldapd/parse.y: Missing ; to appease yyextract, ok
+	  martinh@
+
+2010-10-07 13:23  jmc
+
+	* usr.sbin/ldapd/ldapd.conf.5: aginst -> against; from Luca Corti
+
+2010-09-24 10:44  jmc
+
+	* usr.sbin/ldapd/ldapd.8: add missing .Ar;
+
+2010-09-24 10:10  lum
+
+	* usr.sbin/ldapd/ldapd.8: add -s option. ok martinh@
+
+2010-09-21 10:41  martinh
+
+	* usr.sbin/ldapd/schema.c: Warn if schema file can't be opened.
+
+2010-09-20 17:26  martinh
+
+	* usr.sbin/ldapd/auth.c: Implement support for bsdauth
+	  authentication via simple binds, not only SASL. This works by
+	  prefixing the userPassword attribute with {BSDAUTH}, followed by
+	  the (bsd) username. For example: userPassword: {BSDAUTH}username
+
+	  Idea by william@. Tested by william@.
+
+2010-09-10 21:21  jmc
+
+	* usr.sbin/ldapd/ldapd.conf.5: RFC2247 -> RFC 2247;
+
+2010-09-03 14:34  martinh
+
+	* usr.sbin/ldapctl/Makefile: Need syntax.c to build the schema
+	  parser. Sorry for that.
+
+2010-09-03 09:53  martinh
+
+	* usr.sbin/ldapd/: schema.c, validate.c: Resolve matching rules
+	  from superior attribute types at schema load time instead of when
+	  each attribute is validated.
+
+2010-09-03 09:39  martinh
+
+	* usr.sbin/ldapd/: Makefile, schema.c, schema.h, syntax.c,
+	  validate.c: Implement attribute syntaxes from RFC4517. This adds
+	  validation to the most common attribute types. Specialized
+	  attribute types like Delivery Method or Teletex Terminal
+	  Identifier are recognized for completeness, but not validated.
+
+2010-09-01 18:30  martinh
+
+	* usr.sbin/ldapd/schema.c: Add missing leading string quote
+	  character in attribute type description.  Caused syntax errors
+	  when parsing schema from the subschema.
+
+2010-09-01 17:34  martinh
+
+	* usr.sbin/ldapd/: Makefile, auth.c, control.c, imsgev.c, imsgev.h,
+	  ldapd.c, ldapd.h, ldape.c, namespace.c: Move generic
+	  imsg/libevent glue to a separate file.
+
+	  with eric@ at c2k10
+
+2010-09-01 12:13  martinh
+
+	* usr.sbin/ldapd/btree.c: Do not use FP arithmetic. Variation on a
+	  diff from Mike Belopuhov some time ago.
+
+2010-08-03 18:42  henning
+
+	* usr.sbin/ldapd/parse.y: fix linecount bug with comments spanning
+	  multiple lines problem reported with the obvious fix for bgpd by
+	  Sebastian Benoit <benoit-lists at fb12.de>, also PR 6432 applied
+	  to all the others by yours truly. ok theo isn't it amazing how
+	  far this parser (and more) spread?
+
+2010-07-28 10:06  martinh
+
+	* usr.sbin/ldapd/modify.c: Revert parts of previous change leading
+	  to assertion failure for certain modify operations. Also fix
+	  logic error when replacing an attribute with the empty set.
+
+2010-07-26 09:27  martinh
+
+	* usr.sbin/ldapd/btree.c: Fix a sigbus due to unaligned memory
+	  access, found when compacting on sparc64.
+
+	  reads ok to gilles@
+
+2010-07-21 06:32  martinh
+
+	* usr.sbin/: ldapctl/ldapctl.8, ldapd/ldapd.8, ldapd/ldapd.conf.5:
+	  Add a history section saying that ldapd/ldapctl first appeared in
+	  4.8.
+
+2010-07-18 15:15  martinh
+
+	* usr.sbin/ldapd/btree.c: Fix an unaligned memory access.
+
+2010-07-13 12:54  martinh
+
+	* usr.sbin/ldapd/: attributes.c, modify.c: Avoid double free in
+	  ldap modify requests. The values received in the modify request
+	  is linked into the stored ber structure, and then both are freed.
+	  Fix this by unlinking the values from the request.
+
+2010-07-10 14:27  martinh
+
+	* usr.sbin/ldapd/: ldapd.h, ldape.c, namespace.c: Retry requests
+	  when the btree is busy. Without this, clients will just hang
+	  waiting for a response if the btree was being reopened when the
+	  request was received.
+
+2010-07-06 20:10  martinh
+
+	* usr.sbin/ldapd/: btree.c, control.c: Send empty statistics rather
+	  than segfault if "ldapctl stats" is run when a database is being
+	  reopened due to compaction.
+
+2010-07-06 20:02  martinh
+
+	* usr.sbin/ldapd/modify.c: Plug another memory leak. Forgot to
+	  reset key returned from cursor, having a reference to a cached
+	  page.
+
+2010-07-06 18:59  martinh
+
+	* usr.sbin/ldapd/ldapd.conf.5: Clarify differences between the
+	  'include' and 'schema' keyword. And stress the 'secure' keyword.
+	  Looks fine to jmc@, gilles@
+
+2010-07-06 13:28  martinh
+
+	* usr.sbin/ldapd/btree.c: When moving a node between pages during
+	  rebalance, find the source page prefix before finding any child
+	  page prefix. This fixes an inconsistency during rebalance.
+
+2010-07-06 13:05  martinh
+
+	* usr.sbin/ldapd/btree.c: Adapt code to adhere to the comment (now
+	  that doesn't happen very often!).
+
+	  When deciding how to rebalancing after delete (move or merge),
+	  the number of keys is not important, as long as the source page
+	  doesn't get empty after a move.
+
+	  There is still a rare case where merging two quarter-full pages
+	  will not fit in a whole page (due to prefix expansion) that needs
+	  to be fixed.
+
+2010-07-06 09:27  martinh
+
+	* usr.sbin/ldapd/modify.c: Check return code from commit.
+	  Incorrectly returned success when commit failed due to disk full.
+
+2010-07-05 21:06  martinh
+
+	* usr.sbin/ldapd/btree.c: Unbreak writing updates to the btree
+	  while having a cursor open on the affected pages.
+
+	  When a cursor has increased the reference count on a cached page,
+	  it is copied before updated. The new pointer was however not
+	  passed back to the caller, effectively commiting the old page
+	  numbers.
+
+2010-07-05 17:11  martinh
+
+	* usr.sbin/ldapd/btree.c: Plug a memory leak when aborting
+	  transactions.
+
+2010-07-05 14:27  martinh
+
+	* usr.sbin/ldapd/modify.c: Close cursor on delete. Fixes memory
+	  leak introduced by non-leaf delete check.
+
+2010-07-02 05:23  martinh
+
+	* usr.sbin/ldapd/: schema.c, schema.h, search.c: Dump parsed schema
+	  to buffer and send in requests for the cn=schema subschema
+	  namespace. Only do this if 'objectClasses' and 'attributeTypes'
+	  are expicitly requested. This allows clients to for example
+	  present custom editing forms.
+
+2010-07-02 02:42  martinh
+
+	* usr.sbin/ldapd/modify.c: Don't validate modification of immutable
+	  attributes if the namespace is configured with relaxed schema
+	  checking.
+
+2010-07-02 01:44  martinh
+
+	* usr.sbin/ldapd/modify.c: Disallow deleting non-leaf nodes.
+
+2010-07-02 01:43  martinh
+
+	* usr.sbin/ldapd/: btree.c, btree.h: Add a BT_CURSOR_EXACT
+	  operation to btree_cursor_get. It behaves like BT_CURSOR, but
+	  fails if the key is not found.
+
+2010-07-02 01:08  martinh
+
+	* usr.sbin/ldapd/btree.c: Plug a memory leak where each update
+	  leaked one page.
+
+2010-07-02 00:42  martinh
+
+	* usr.sbin/ldapd/schema.c: Fix memory leaks in schema parser.
+
+2010-07-01 20:09  martinh
+
+	* usr.sbin/ldapd/: conn.c, ldapd.h, ldape.c: Implement the LDAP
+	  compare operation.
+
+2010-07-01 18:37  martinh
+
+	* usr.sbin/ldapd/: schema.c, schema.h: Parse (and ignore) schema
+	  extensions with an X- prefix. Bail on unknown keywords.
+
+2010-07-01 17:21  martinh
+
+	* usr.sbin/ldapd/schema.c: Give a more descriptive error message
+	  when an object class definition references non-existent attribute
+	  types.
+
+	  from william@
+
+2010-07-01 06:15  martinh
+
+	* usr.sbin/ldapd/validate.c: Free the list of object classes
+	  allocated after validating an entry.
+
+2010-07-01 06:11  martinh
+
+	* usr.sbin/ldapd/btree.c: reset number of revisions after
+	  compaction
+
+2010-07-01 05:13  martinh
+
+	* usr.sbin/ldapd/btree.c: Copy statistics to the compacted database
+	  so it isn't lost.
+
+2010-07-01 04:21  martinh
+
+	* usr.sbin/ldapd/ber.c: If the length of an element being read is
+	  larger than what is available in the buffer, return immediately.
+	  This fixes reading large messages, and allows bad requests to be
+	  cancelled earlier.
+
+	  Originally from Alexander Schrijver, tweaked by me.
+
+2010-07-01 03:47  martinh
+
+	* usr.sbin/ldapd/schema.c: Fix two possible null pointer
+	  assignments in the error path.  found by clang static analyzer
+
+2010-07-01 03:43  martinh
+
+	* usr.sbin/ldapd/btree.c: Fix a null pointer dereference when
+	  writing an entry requiring a single overflow page. Found by clang
+	  static analyzer. Also add some assertions to silence clang.
+
+2010-07-01 02:19  martinh
+
+	* usr.sbin/ldapd/: btree.c, ldapd.c, ldape.c, search.c, ssl.c:
+	  Remove dead assignments. Found by clang static analyzer.
+
+2010-07-01 00:43  martinh
+
+	* usr.sbin/ldapd/modify.c: Add checks that we're not adding
+	  immutable attributes, just as we're disallowing modifying
+	  immutable attributes. Remove the check for modifying operational
+	  attributes, as there's nothing that disallows that (except that
+	  they're also often marked as immutable).
+
+	  While here, check the return value from ber_add_* and
+	  ldap_add_attribute.
+
+2010-06-30 22:16  martinh
+
+	* usr.sbin/ldapd/parse.y: Set a default btree cache size.
+
+2010-06-30 21:44  martinh
+
+	* usr.sbin/ldapd/btree.c: Don't prune page cache directly when
+	  adding to it. Fixes a crash with a zero cache-size.
+
+	  found by william@
+
+2010-06-30 21:37  martinh
+
+	* usr.sbin/ldapctl/ldapctl.c: Don't compact and reindex referral
+	  namespaces.
+
+2010-06-30 20:36  martinh
+
+	* usr.sbin/ldapd/ldapd.conf.5: Change the example for the 'include'
+	  keyword as schema files are no longer included that way.
+
+	  pointed out by william@
+
+2010-06-30 19:42  martinh
+
+	* usr.sbin/ldapd/: schema.c, validate.c: remove trailing spaces
+
+2010-06-30 19:35  martinh
+
+	* usr.sbin/ldapd/validate.c: Validate that an entry can't belong to
+	  an abstract object class directly, unless it also belongs to a
+	  subclassed object class (structural or auxiliary).
+
+2010-06-30 19:26  martinh
+
+	* usr.sbin/ldapd/: auth.c, ldapd.conf.5, ldapd.h, parse.y: Add a
+	  global root user that is allowed to read/write entries in all
+	  local namespaces. Useful for dump/restore of all namespaces.
+
+2010-06-30 17:16  martinh
+
+	* usr.sbin/ldapd/: control.c, ldape.c: Don't send statistics for
+	  referral namespaces. This unbreaks ldapctl stats.  Avoid null
+	  pointer dereference when reopening a namespace.
+
+2010-06-30 04:17  martinh
+
+	* usr.sbin/ldapd/: schema.h, validate.c: Move OBJ_NAME and
+	  ATTR_NAME macros to schema.h so it's reachable from schema
+	  parser. Also fix a typo.
+
+2010-06-30 04:14  martinh
+
+	* usr.sbin/ldapd/schema.c: Verify that any object class subclassing
+	  is allowed.
+
+2010-06-30 03:24  martinh
+
+	* usr.sbin/ldapd/validate.c: Validate that all attributes are
+	  allowed by any of its object classes.  Properly expand the object
+	  class hierarchy before doing this. Also verify that there is only
+	  one structural object class. Finally add support for the
+	  extensibleObject auxiliary object class.
+
+2010-06-29 22:39  jmc
+
+	* usr.sbin/ldapd/ldapd.conf.5: sort SEE ALSO;
+
+2010-06-29 21:54  martinh
+
+	* usr.sbin/ldapd/: auth.c, ldapd.conf.5, ldapd.h, ldape.c,
+	  modify.c, namespace.c, parse.y, search.c: Add support for
+	  referrals. Referrals are configured in the config file, either in
+	  the global context or in a namespace. The latter can be used to
+	  delegate requests to different servers for specific parts of the
+	  DIT. The former is a global catch-all referral.
+
+2010-06-29 21:23  martinh
+
+	* usr.sbin/ldapd/ldapd.conf.5: document the 'schema' keyword, and
+	  remove the placeholders for schema syntax
+
+2010-06-29 21:00  martinh
+
+	* usr.sbin/ldapd/: conn.c, ldapd.h, ldape.c: Remember on what
+	  listener a connection got from, and return protocol error if
+	  trying to use starttls without a configured certificate, instead
+	  of just blocking the client.
+
+2010-06-29 16:25  martinh
+
+	* usr.sbin/ldapctl/Makefile: Add the new schema parser.  noticed by
+	  deraadt, sorry!
+
+2010-06-29 04:27  martinh
+
+	* usr.sbin/ldapd/btree.c: Fix signedness warnings.  Noticed by
+	  deraadt
+
+2010-06-29 02:54  martinh
+
+	* usr.sbin/ldapd/modify.c: don't overwrite the return code from
+	  validate_entry
+
+2010-06-29 02:45  martinh
+
+	* usr.sbin/ldapd/: Makefile, ldapd.h, modify.c, parse.y, schema.c,
+	  schema.h, search.c, validate.c: Rewrite the schema parser, as
+	  it's not a context-free grammar.  This also brings the config
+	  parser more in line with other parse.y in the tree. The new
+	  schema parser also supports symbolic OID names.
+
+	  You need to update your /etc/ldapd.conf. Schema files are no
+	  longer included with the 'include' keyword, you have to use
+	  'schema' for that.
+
+	  Moves schema-related structures to a separate include file to
+	  ease reuse.
+
+2010-06-28 17:42  martinh
+
+	* usr.sbin/ldapd/schema/nis.schema: Use the proper OIDs for syntax
+	  description, instead of bogus symbolic names.
+
+2010-06-27 18:31  martinh
+
+	* usr.sbin/ldapd/: ldapd.h, conn.c: return value unused, found by
+	  lint
+
+2010-06-27 18:19  martinh
+
+	* usr.sbin/ldapd/: ssl.c, ssl_privsep.c, uuid.c, uuid.h: Remove
+	  unused functions and variables, found by lint.
+
+2010-06-27 16:24  martinh
+
+	* usr.sbin/ldapd/: control.c, ldapd.h: Remove unused code.
+
+2010-06-27 16:01  martinh
+
+	* usr.sbin/ldapd/ldapd.h: remove an unused typedef
+
+2010-06-27 01:23  martinh
+
+	* usr.sbin/ldapd/btree.c: Add support for different page sizes in
+	  the btree. Add a new header page type and move the page size,
+	  magic and version from the meta page here.
+
+	  Bump the btree version number. This requires a dump/restore of
+	  any existing databases.
+
+2010-06-26 23:19  martinh
+
+	* usr.sbin/ldapd/index.c: Unbreak removal of one-level search
+	  index.
+
+2010-06-23 16:22  jmc
+
+	* usr.sbin/ldapctl/: ldapctl.8, ldapctl.c: sort the options list,
+	  and add some new options to usage();
+
+2010-06-23 13:34  martinh
+
+	* usr.sbin/ldapd/ldapd.h: remove leftovers from old compaction code
+
+2010-06-23 13:31  martinh
+
+	* usr.sbin/ldapctl/: Makefile, ldapctl.8, ldapctl.c: Re-implement
+	  compaction and (re-)indexing outside ldapd.
+
+2010-06-23 13:10  martinh
+
+	* usr.sbin/ldapd/: auth.c, btree.c, btree.h, index.c, modify.c,
+	  namespace.c, search.c: Set errno to appropriate values when
+	  returning failure in btree. Make btree functions only return
+	  success or failure (-1 or NULL). Update callers to check errno.
+
+2010-06-23 12:40  martinh
+
+	* usr.sbin/ldapd/: Makefile, compact.c, control.c, index.c,
+	  ldapd.h, ldape.c: Remove compaction and indexing from ldapd. It
+	  is better done by a separate process now that the btree can pick
+	  up the changes automatically.
+
+2010-06-17 18:36  martinh
+
+	* usr.sbin/ldapd/btree.c: Fix byte alignment on sparc64.
+
+	  From Alexander Schrijver.
+
+2010-06-15 19:30  martinh
+
+	* usr.sbin/ldapd/: ldapd.h, namespace.c, parse.y, util.c: Move
+	  around some functions to ease re-use from ldapctl.
+
+2010-06-15 15:54  martinh
+
+	* usr.sbin/ldapd/btree.c: Verify that a transaction passed to
+	  btree_tnx_{put,del} is not readonly.
+
+2010-06-15 15:47  martinh
+
+	* usr.sbin/ldapd/: auth.c, ldapd.h, modify.c, namespace.c,
+	  search.c: Make modify and simple auth requests open their own
+	  transactions, as search already does. Trigger a reopen imsg
+	  request if either the data or index databases are compacted.
+	  Queue the failed request and try again when the file is reopened.
+
+	  Compaction can now be done by a separate process, and ldapd will
+	  pick up the change and reopen the file.
+
+2010-06-15 15:14  martinh
+
+	* usr.sbin/ldapd/: uuid.c, uuid.h: remove unused uuid_hash
+	  function, found by lint
+
+2010-06-15 15:12  martinh
+
+	* usr.sbin/ldapd/: ldapd.c, ldapd.h, ldape.c, namespace.c:
+	  Implement support in the parent to (re-)open database files on
+	  behalf of the unprivileged child over imsg. Part of a larger
+	  change that will fix database compaction.
+
+2010-06-15 14:43  martinh
+
+	* usr.sbin/ldapd/ldapd.c: EV_READ and EV_WRITE are not mutually
+	  exclusive, so check if we get both in the same event.
+
+2010-06-13 06:55  martinh
+
+	* usr.sbin/ldapd/: btree.c, btree.h: Don't expose typedefs of
+	  pgno_t and indx_t in the public header file, move them to
+	  btree.c. Also don't use exact-width integer types in public btree
+	  api.
+
+2010-06-13 06:49  martinh
+
+	* usr.sbin/ldapd/btree.c: Fix btree reference counting when opening
+	  the database with a file descriptor directly using
+	  btree_open_fd(). Also wrap referencing in a function.
+
+2010-06-13 06:46  martinh
+
+	* usr.sbin/ldapd/btree.h: Fix value clash in btree flags
+	  BT_FIXPADDING and BT_NOSYNC.
+
+2010-06-11 12:02  martinh
+
+	* usr.sbin/ldapd/: ldapd.h, search.c: Wrap searches in a read-only
+	  transaction so it is guaranteed to see a consistent snapshot of
+	  the database.
+
+	  Also fixes a couple of format string errors for long long ints.
+
+2010-06-11 08:45  martinh
+
+	* usr.sbin/ldapd/: index.c, namespace.c: Track changes in
+	  btree_txn_* API, pass a NULL btree when also passing a
+	  transaction.
+
+2010-06-11 08:40  martinh
+
+	* usr.sbin/ldapd/btree.c: Keep returning BT_DEAD if last meta page
+	  has the "tombstone" bit set.
+
+2010-06-11 08:27  martinh
+
+	* usr.sbin/ldapd/ldape.c: print long long int as %lld
+
+2010-06-11 07:41  martinh
+
+	* usr.sbin/ldapd/btree.c: Allow functions that accept both a btree
+	  and a txn argument to be passed a NULL btree pointer. In that
+	  case the btree is taken from the transaction.
+
+	  If both a btree and txn pointer is passed, make sure the
+	  transaction is actually opened on the specified btree.
+
+2010-06-11 05:29  martinh
+
+	* usr.sbin/ldapd/: btree.c, btree.h: Append a "tombstone" meta page
+	  after a database has been compacted. This allows other processes
+	  to pick up the change and re-open the file.
+
+2010-06-10 19:36  martinh
+
+	* usr.sbin/ldapd/btree.c: Read-only transactions have no
+	  dirty_queue, so check for a read-only transaction before freeing
+	  it.
+
+2010-06-08 17:52  martinh
+
+	* usr.sbin/ldapd/ber.c: ber_calc_len() is not an internal function,
+	  so adjust the comment.
+
+	  from Dawe
+
+2010-06-06 17:49  miod
+
+	* usr.sbin/ldapd/Makefile: Fix LDADD component order to let this
+	  build on static arches.
+
+2010-06-05 17:29  martinh
+
+	* usr.sbin/ldapd/Makefile: Install a default ldapd.conf, and
+	  standard schema files in /etc/ldap.
+
+	  ok deraadt@
+
+2010-06-05 15:27  martinh
+
+	* usr.sbin/ldapd/ber.c: Minimize changes against the ber.c in snmpd
+	  and ypldap. This also fixes an erroneous protocol error return in
+	  ldap_extended(), which prevented StartTLS from working.
+
+2010-06-03 17:32  martinh
+
+	* usr.sbin/ldapd/: btree.c, index.c, search.c: Fix compilation on
+	  gcc2. Check a return value from malloc while at it.
+
+	  "that compiles!" deraadt@
+
+2010-06-03 17:29  martinh
+
+	* usr.sbin/ldapd/: ldapd.h, ldape.c, namespace.c: Open database
+	  files before chrooting, and use an absolute path to the database
+	  files, instead of relying on the chrooted-to path.
+
+	  This breaks compaction as the ldape process can't re-open the
+	  database files. This is being worked on.
+
+	  ok gilles@
+
+2010-06-02 14:45  deraadt
+
+	* usr.sbin/ldapd/btree.3: fix rcs prefix
+
+2010-06-02 09:12  martinh
+
+	* usr.sbin/ldapd/: btree.c, parse.y: remove c++ comments ok gilles@
+
+2010-06-01 15:10  martinh
+
+	* usr.sbin/ldapd/namespace.c: namespace_new() leaks `ns' on error
+	  path.  from zinovik@
+
+2010-05-31 18:29  martinh
+
+	* usr.sbin/ldapd/: btree.c, compact.c, conn.c, index.c, ldapd.c,
+	  ldape.c, parse.y, search.c, ssl.c, ssl_privsep.c, uuid.c: Remove
+	  trailing whitespace and spaces before tabs.
+
+	  ok gilles@
+
+2010-05-31 17:47  martinh
+
+	* usr.sbin/ldapd/Makefile: Add -I${.CURDIR}, fixes building in
+	  obj/.
+
+	  ok deraadt@
+
+2010-05-31 17:36  martinh
+
+	* usr.sbin/: ldapctl/Makefile, ldapctl/ldapctl.8,
+	  ldapctl/ldapctl.c, ldapd/Makefile, ldapd/aldap.h,
+	  ldapd/attributes.c, ldapd/auth.c, ldapd/ber.c, ldapd/ber.h,
+	  ldapd/btest.c, ldapd/btree.3, ldapd/btree.c, ldapd/btree.h,
+	  ldapd/compact.c, ldapd/conn.c, ldapd/control.c, ldapd/filter.c,
+	  ldapd/index.c, ldapd/ldapd.8, ldapd/ldapd.c, ldapd/ldapd.conf.5,
+	  ldapd/ldapd.h, ldapd/ldape.c, ldapd/log.c, ldapd/modify.c,
+	  ldapd/namespace.c, ldapd/parse.y, ldapd/search.c, ldapd/ssl.c,
+	  ldapd/ssl_privsep.c, ldapd/util.c, ldapd/uuid.c, ldapd/uuid.h,
+	  ldapd/validate.c, ldapd/schema/core.schema,
+	  ldapd/schema/inetorgperson.schema, ldapd/schema/nis.schema:
+	  Initial import of ldapd, a small LDAP daemon. Work in progress.
+
+	  ok deraadt@ jacekm@ gilles@ back@ henning@ blambert@
+
+2009-01-15 13:14  millert
+
+	* lib/libc/gen/: auth_subr.c, authenticate.c: Remove support for
+	  kerb4 '.' instance separator, kerb4 is dead.	OK jacekm@
+
+2008-04-04 17:42  millert
+
+	* lib/libc/gen/authenticate.c: Zero out the password/response
+	  argument in the simplified BSD auth interafces.  Otherwise, we
+	  end up with an extra copy in memory when auth_call() forks that
+	  is not possible to clear.
+
+2008-03-24 16:10  deraadt
+
+	* lib/libc/gen/auth_subr.c: msg_controllen has to be CMSG_SPACE so
+	  that the kernel can account for each cmsg_len (ie. msg_controllen
+	  = sum of CMSG_ALIGN(cmsg_len).  This works now that kernel fd
+	  passing has been fixed to accept a bit of sloppiness because of
+	  this ABI repair.  lots of discussion with kettenis
+
+2008-03-15 16:19  deraadt
+
+	* lib/libc/gen/auth_subr.c: Repair the simple cases for
+	  msg_controllen where it should just be CMSG_SIZE(sizeof(int)),
+	  not sizeof(buffer) which may be larger because of alignment; ok
+	  kettenis hshoexer
+
+2008-03-13 01:49  deraadt
+
+	* lib/libc/gen/auth_subr.c: Correct CMSG_SPACE and CMSG_LEN usage
+	  everywhere in the tree. Due to an extensive discussion with otto,
+	  kettenis, millert, and hshoexer
+
+2007-11-01 00:55  millert
+
+	* lib/libc/gen/auth_subr.c: Fix waitpid() idiom.  Noticed by
+	  deraadt@
+
+2007-09-17 07:07  moritz
+
+	* lib/libc/gen/: auth_subr.c, authenticate.c: Check snprintf(3)
+	  return value for error or truncation.  Mostly path construction,
+	  where truncation could be bad.
+
+	  ok and input from deraadt@ millert@ ray@
+
+2006-01-06 18:53  millert
+
+	* include/bsd_auth.h: Adapt things to use __type_t instead of
+	  _BSD_TYPE_T_ Add new sys/_types.h header Include machine/_types.h
+	  or sys/_types.h where applicable
+
+2005-12-19 17:07  millert
+
+	* lib/libc/gen/authenticate.c: Use strlcpy() return value in bound
+	  check instead of using  an extra strlen().  This has been in my
+	  tree for a long time.
+
+2005-06-26 16:39  millert
+
+	* lib/libc/gen/authenticate.c: add missing va_end(); Andrey Matveev
+
+2004-12-02 20:38  millert
+
+	* lib/libc/gen/auth_subr.c: Restart waitpid() if we are interupted
+	  by a signal.	OK deraadt@
+
+2004-08-30 18:14  millert
+
+	* lib/libc/gen/auth_subr.c: Use CMSG_SPACE when allocating space
+	  for the control message.  Fixes fd passing problems on sparc and
+	  sparc64.  OK henning@
+
+2004-08-09 01:39  millert
+
+	* lib/libc/gen/auth_subr.c: Add my copyright.
+
+2004-08-03 19:43  millert
+
+	* lib/libc/gen/auth_subr.c: Add support for passing a file
+	  descriptor back and forth between the parent program and the
+	  login script.  This will be used by login scripts that need to
+	  maintain state, for instance keeping a record locked during
+	  authentication while using separate challenge and response
+	  authentication with S/Key.  OK deraadt@ marius@ henning@
+
+2004-01-23 03:48  deraadt
+
+	* lib/libc/gen/auth_subr.c: Use closefrom(); ok millert tedu
+
+2004-01-10 16:45  millert
+
+	* lib/libc/gen/auth_subr.c: Don't clean options in auth_clean()
+	  which was introduced in rev 1.8.  login(1) depends on
+	  auth_clean() leaving options alone so this was API breakage.
+	  Verified to not make ftpd leak memory by mpech@.
+
+2004-01-08 04:07  brad
+
+	* lib/libc/gen/auth_subr.c: use va_copy() with gcc 3 and up.
+
+	  ok millert@ espie@
+
+2003-06-11 21:03  deraadt
+
+	* lib/libc/gen/auth_subr.c: ansification; checked by pval
+
+2003-01-04 22:36  deraadt
+
+	* lib/libc/gen/auth_subr.c: spelling
+
+2002-11-22 23:27  millert
+
+	* lib/libc/gen/auth_subr.c: Initialize status to zero before
+	  calling waitpid().  That way, if there is nothing to be waited
+	  for (for instance if SIGCHLD is being ignored) we don't check
+	  WIFEXITED(garbage off the stack).
+
+2002-11-22 19:47  deraadt
+
+	* lib/libc/gen/auth_subr.c: more snprintf; ok millert
+
+2002-10-30 14:54  drahn
+
+	* lib/libc/gen/auth_subr.c: Revert this va_copy addition, it cannot
+	  work on macppc (which is the only arch where va_copy is currently
+	  required), current version of va_copy uses alloca, but since the
+	  results of the va_copy are not used here, only after return,
+	  stack trashing will occur.  This will have to be revised again
+	  for gcc 3.2 support on powerpc.
+
+2002-10-24 17:13  drahn
+
+	* lib/libc/gen/auth_subr.c: Use va_copy() for varargs assignemnt.
+	  va_copy() is standard with C99 and gcc3.2 requires this on
+	  powerpc.
+
+2002-10-16 19:45  millert
+
+	* lib/libc/gen/auth_subr.c: Replace "if (value != NULL && value ==
+	  as->FOO)" with just "if (value == as->FOO)" -- NULL needs no
+	  special handling.  Pointed out by Paul Borman.
+
+2002-10-15 20:17  millert
+
+	* lib/libc/gen/auth_subr.c: Fix typo introduce in last commit
+
+2002-10-15 20:16  millert
+
+	* lib/libc/gen/authenticate.c: cast NULL varargs sentinel to char *
+	  so it is 64 bit on alpha & sparc64
+
+2002-10-15 17:47  millert
+
+	* lib/libc/gen/auth_subr.c: If auth_setitem() is called with the
+	  current value (ie: the pointer is the same as the private value)
+	  then just return 0 as there is nothing to do.
+
+	  This fixes a potentially nasty problem where the caller could
+	  grab the username or style from the auth session via
+	  auth_getitem() and then call auth_verify() with those values.
+	  auth_setitem() would eventually get called which would make a
+	  private copy and free the old values in the auth session.  After
+	  all this, the stashed username and/or style pointers would point
+	  to freed memory.
+
+2002-10-15 17:10  millert
+
+	* lib/libc/gen/auth_subr.c: Cast NULL sentinel in auth_call() to a
+	  pointer
+
+2002-10-13 21:12  millert
+
+	* lib/libc/gen/auth_subr.c: Move the clearing of as->state in
+	  auth_challenge() to after the sanity checks.	The check for "as
+	  != NULL" is useless if you have already dereferenced "as".  Also
+	  fix some comment typos.  From Moritz Jodeit.
+
+2002-09-02 19:56  avsm
+
+	* share/mk/bsd.regress.mk: - Precede internal bsd.regress.mk
+	  variables with a _ - Rename old variables to be easier to read,
+	  and deprecate old variables.	The old variables will still work,
+	  but emit warnings.  - REGRESS_SKIP_SLOW only needs to be
+	  non-empty now, not explicitly set to 'yes' - REGRESS_LOG can
+	  contain more than one file to append results to - ERRORS variable
+	  can be set in Makefile to emit warnings or indicate fatal errors.
+	   - Add REGRESS_MAIL variable which can be set to an email address
+	  to send results to.  Currently this only works for a full
+	  regression run, since art doesnt want partial run results - sync
+	  bsd.regress.mk(5) with these changes
+
+	  ok art@ , also looked over by miod@
+
+2002-08-30 08:50  espie
+
+	* include/bsd_auth.h: put sentinel back in. Thx miod@
+
+2002-08-04 22:44  millert
+
+	* lib/libc/gen/auth_subr.c: If fork() fails, log/report the error
+	  *before* we close our fd's just in case close(2) were to set
+	  errno.
+
+2002-07-14 23:47  deraadt
+
+	* lib/libc/gen/authenticate.c: indent, and double free fix; millert
+	  ok
+
+2002-06-27 22:21  deraadt
+
+	* lib/libc/gen/auth_subr.c: KNF
+
+2002-06-23 03:03  deraadt
+
+	* lib/libc/gen/authenticate.c: uid_t is unsigned
+
+2002-06-07 03:11  miod
+
+	* include/bsd_auth.h: Backout previous change. Since it requires
+	  people to upgrade gcc, we want to give them a larger timeslot to
+	  do that.  Requested by deraadt@ and various people on icb or
+	  vocally.
+
+2002-06-05 19:27  espie
+
+	* include/bsd_auth.h: Use attribute((sentinel)) on functions where
+	  it makes sense.  (this will warn if they are used without a
+	  terminating NULL pointer.  Note *pointer*, very useful for arches
+	  where 0 != (void *)0, in size)
+
+	  okay millert@
+
+2002-05-24 21:22  deraadt
+
+	* lib/libc/gen/: auth_subr.c, authenticate.c: try to use strlcpy
+	  and snprintf more; ok various
+
+2002-03-20 17:17  mpech
+
+	* lib/libc/gen/authenticate.c: fix memleak.
+
+	  millert@ ok
+
+2002-03-13 21:39  millert
+
+	* lib/libc/gen/: auth_subr.c, authenticate.c: Convert indentation
+	  whitespace -> tabs and kill $@%^#! ^M's
+
+2002-03-12 02:28  millert
+
+	* include/bsd_auth.h: Make the function prototypes line up better
+	  and add stub struct definitions to allow bsd_auth.h to be
+	  included before login_cap.h or pwd.h.
+
+2002-02-17 01:10  marc
+
+	* share/mk/bsd.regress.mk: skip tests that require root
+	  (REGRESSROOTTARGETS) unless the user is root or SUDO is not
+	  empty.  OK art@
+
+2002-02-16 21:27  millert
+
+	* include/bsd_auth.h: Part one of userland __P removal.  Done with
+	  a simple regexp with some minor hand editing to make comments
+	  line up correctly.  Another pass is forthcoming that handles the
+	  cases that could not be done automatically.
+
+2002-02-05 07:51  mpech
+
+	* lib/libc/gen/: auth_subr.c, authenticate.c: o) Fix memory leak in
+	  _auth_checklogin(), auth_approval(), auth_close() and
+	  auth_clean().
+
+	  Spotted via ftpd. We could use ftpd as a simple debug tool for
+	  bsdauth and login_cap routines. :)
+
+	  millert@ help&OK
+
+2002-01-14 16:50  millert
+
+	* lib/libc/gen/auth_subr.c: If waitpid() return ECHILD that should
+	  not be a fatal error since someone else could have waited for the
+	  process or zombies could be disabled via SIG_IGN or SA_NOCLDWAIT.
+
+2002-01-03 16:54  brad
+
+	* share/mk/bsd.regress.mk: use :L variable modifier
+
+2002-01-03 02:20  art
+
+	* share/mk/bsd.regress.mk: make regress the main target (now that
+	  dependencies are correct)
+
+2002-01-03 01:47  art
+
+	* share/mk/bsd.regress.mk: OpenBSD tag
+
+2002-01-03 01:46  art
+
+	* share/mk/bsd.regress.mk: s/timeout/possible timeout/ the test
+	  could simply fail.
+
+2002-01-03 01:01  art
+
+	* share/mk/bsd.regress.mk: Two new variables.	REGRESSSLOWTARGETS,
+	  contains a list of all regress targets that are slow.
+	  REGRESSSKIPSLOW, settable to "yes"/"no" (default is "no") when
+	  running    regress. Skips slow tests.
+
+	  (*for some arbitrary and very subjective value of "slow")
+
+2002-01-03 00:28  art
+
+	* share/mk/bsd.regress.mk: Support for a new variable
+	  REGRESSMAXTIME that sets the cpu time ulimit for tests. Needed
+	  for libc_r tests.  With some help from marc@
+
+2002-01-02 03:27  art
+
+	* share/mk/bsd.regress.mk: Eh? Why could I finish a make build with
+	  this 6 hours ago?
+
+2002-01-01 22:54  art
+
+	* share/mk/bsd.regress.mk: Start for a framework for regression
+	  tests. Simplifies the most common regress test targets, provides
+	  logging of success/failure and various minor features.
+
+	  Much Makefile magic from espie@ who thinks that my shell
+	  programming skills are "atrocious" (and I agree).
+
+2001-10-26 19:44  markus
+
+	* lib/libc/gen/authenticate.c: run the approve for accounts with
+	  expiration time, too. ok millert@
+
+2001-07-09 06:57  deraadt
+
+	* lib/libc/gen/authenticate.c: a first pass at -Wall
+
+2001-07-02 19:22  millert
+
+	* lib/libc/gen/: auth_subr.c, authenticate.c: Convert warn/warnx ->
+	  _warn/_warnx Should not really spew to stderr from libc but right
+	  now there is no other way to get a sensible error message to the
+	  user.
+
+2001-06-24 21:18  millert
+
+	* lib/libc/gen/: auth_subr.c, authenticate.c: When splitting
+	  instance from username, treat '/' as a separator as well (for
+	  Kerb5).
+
+2001-06-03 19:55  millert
+
+	* lib/libc/gen/authenticate.c: Don't bail out early for users w/o
+	  passwd file entries since we may want to cons up a fake prompt
+	  for challenge/response auth methods.	markus@ OK'd.
+
+2001-01-28 23:43  niklas
+
+	* include/bsd_auth.h: $OpenBSD$
+
+2001-01-01 21:51  millert
+
+	* include/bsd_auth.h: Guard agaist multiple inclusion Add missing
+	  __BEGIN_DECLS and use __P macro in function prototypes
+
+2000-11-23 00:38  millert
+
+	* lib/libc/gen/auth_subr.c: zero pw_passwd before freeing
+
+2000-11-21 19:43  millert
+
+	* lib/libc/gen/auth_subr.c: Remove needless memset() from last
+	  commit.
+
+2000-11-21 04:17  millert
+
+	* lib/libc/gen/auth_subr.c: Deal with va_list not being a pointer;
+	  this should be re-evaluated.	Fixes a compile problem on alpha.
+
+2000-11-21 00:51  millert
+
+	* include/bsd_auth.h, lib/libc/gen/auth_subr.c,
+	  lib/libc/gen/authenticate.c: BSD authentication routines from
+	  BSDI.  Presently this is not used but the login_* helper programs
+	  and other support will be committed in the near future.
+

@@ -56,6 +56,12 @@ post-configure:
 		${WRKSRC}/src/usr.sbin/ldapd/Makefile
 	${REINPLACE_CMD} 's|-lcrypto|${WRKDIR}/libressl-${SSL_VERSION}/crypto/.libs/libcrypto.a|g' \
 		${WRKSRC}/src/usr.sbin/ldapd/Makefile
+	${REINPLACE_CMD} 's|-ltls|${WRKDIR}/libressl-${SSL_VERSION}/tls/.libs/libtls.a|g' \
+		${WRKSRC}/src/usr.sbin/ldapctl/Makefile
+	${REINPLACE_CMD} 's|-lssl|${WRKDIR}/libressl-${SSL_VERSION}/ssl/.libs/libssl.a|g' \
+		${WRKSRC}/src/usr.sbin/ldapctl/Makefile
+	${REINPLACE_CMD} 's|-lcrypto|${WRKDIR}/libressl-${SSL_VERSION}/crypto/.libs/libcrypto.a|g' \
+		${WRKSRC}/src/usr.sbin/ldapctl/Makefile
 
 post-install:
 	${INSTALL_DATA} ${WRKSRC}/src/etc/examples/ldapd.conf \

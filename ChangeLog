@@ -1,3 +1,303 @@
+2021-05-02 14:39  martijn
+
+	* usr.sbin/ldapd/parse.y: Fix having hostnames in the listen on
+	  statement. Regression introduced in r1.39. Issue originally
+	  reported by Anton Kasimov via rob@.
+
+	  OK claudio@
+
+2021-04-20 21:11  dv
+
+	* usr.sbin/ldapd/: control.c, ldapd.h, ldape.c: Move TAILQ
+	  initialization to files where they are used.
+
+	  These priv-sep daemons all follow a similar design and use TAILQs
+	  for tracking control process connections. In most cases, the
+	  TAILQs are initialized separate from where they are used. Since
+	  the scope of use is generally confined to a specific control
+	  process file, this commit also removes any extern definitions and
+	  exposing the TAILQ structures to other compilation units.
+
+	  ok bluhm@, tb@
+
+2021-02-22 17:15  martijn
+
+	* lib/libutil/ber.c: Make the ober_get_* set of function to accept
+	  a NULL-pointer.  This allows us to do ber-type checking inside
+	  ober_scanf_elements, which will allow for stricter ASN.1 parsing
+	  in the future.
+
+	  Manpage feedback and OK claudio@, jmc@ OK claudio@
+
+2021-01-28 19:56  martijn
+
+	* lib/libutil/ber.c: Add '$' to ober_scanf_elements().	This allows
+	  us to enforce end of sequence/set without having to manually
+	  check be_next for NULL.
+
+	  No lib bump needed according to millert@ OK millert@ rob@
+
+2021-01-28 18:09  millert
+
+	* usr.sbin/ldapd/ldapd.8: Add ldap(1) to the SEE ALSO section.	OK
+	  deraadt@
+
+2021-01-27 22:12  rob
+
+	* usr.sbin/ldapd/ldapd.c: Unveil ldapd. Follow recent precedent and
+	  elect to forego the unlinking of some objects at shutdown thereby
+	  allowing for a tighter unveil.
+
+	  Feedbackup from deraadt@ and martijn@.
+
+	  OK deraadt@
+
+2021-01-27 07:21  deraadt
+
+	* usr.sbin/ldapd/ldapd.h: these programs (with common ancestry) had
+	  a -fno-common problem related to privsep_procid.  ok mortimer
+
+2021-01-22 18:27  rob
+
+	* lib/libutil/ber.c: Gracefully handle any erroneous closing
+	  bracket/brace trailers in ober_scanf_elements().
+
+	  OK martijn@
+
+2021-01-22 03:20  rob
+
+	* lib/libutil/ber.c: Valid integer and enumerated types always have
+	  non-zero length. Perform check to ensure we avoid a possible
+	  (undefined) negative shift. Found with clang static analyzer.
+
+	  Tweaked and OK martijn@
+
+2021-01-17 14:45  rob
+
+	* usr.sbin/ldapd/logmsg.c: Comply with man page intent of -dvv
+	  enabling BER level logging.
+
+	  Tweak and ok martijn@
+
+2021-01-15 18:57  rob
+
+	* usr.sbin/ldapctl/ldapctl.c: Stop the -v command line argument
+	  from overriding logging brevity.
+
+	  Tweaked and OK claudio@
+
+2021-01-09 14:51  rob
+
+	* usr.sbin/ldapd/: ldapd.h, parse.y: Remove locally imposed limit
+	  on sockets.
+
+	  Suggested by martijn@, ok claudio@
+
+2020-12-30 18:41  benno
+
+	* usr.sbin/ldapd/parse.y: getifaddrs() can return entries where
+	  ifa_addr is NULL. Check for this before accessing anything in
+	  ifa_addr.  ok claudio@
+
+2020-12-17 14:54  bluhm
+
+	* share/mk/bsd.regress.mk: Run setup_once targets in a sepearate
+	  block with headline before all other targets.  OK tb@
+
+2020-12-16 16:53  bluhm
+
+	* share/mk/bsd.regress.mk: When debugging tests, it is useful to
+	  see the target name and which output belongs to it.  Echo
+	  headline with regress target and empty line afterwards.  OK
+	  sthen@ tb@ OK claudio@
+
+2020-11-29 20:04  tb
+
+	* usr.sbin/ldapd/util.c: Silence -Wsign-compare whining in
+	  bsnprintf()
+
+	  This warning was present since an incorrect cast was removed in
+	  r1.11.  Add the cast to the correct place, i.e., cast to the
+	  wider type.
+
+	  ok florian martijn
+
+2020-11-29 19:48  tb
+
+	* usr.sbin/ldapd/parse.y: Fix cert and key path inference for
+	  absolute paths
+
+	  ldapd infers certificate and key paths from the configured
+	  certificate string.  It appends ".crt" and ".key", respectively,
+	  and in the case of a relative path it also prepends
+	  "/etc/ldap/certs/".  A logic error results in prepending
+	  "/etc/ldap/certs/" also for absolute paths. Avoid this by making
+	  the whole thing readable at the cost of a bit of verbosity.
+
+	  Problem reported by Maksim Rodin on misc@, thanks! Initial fix
+	  from me, committing an improved version on behalf of martijn.
+
+	  ok jmatthew, tb
+
+2020-10-13 04:42  guenther
+
+	* lib/libc/gen/auth_subr.c: Do some easy .data ->
+	  .rodata/.data.rel.ro conversions
+
+	  ok millert@ deraadt@
+
+2020-09-19 09:46  tb
+
+	* etc/examples/ldapd.conf: Add a bsd.schema line to the example
+	  ldapd.conf
+
+	  from reyk
+
+2020-09-19 09:46  tb
+
+	* usr.sbin/ldapd/: Makefile, schema/bsd.schema: Add a bsd.schema
+	  including a shadowPassword and an sshPublicKey attribute that can
+	  be used to extend existing LDAP users with the additional
+	  bsdAccount objectclass. The former is useful for ypldap+ldapd
+	  setups without login_ldap and the latter makes it easier to use
+	  sshd's AuthorizedKeysCommand.
+
+	  Originally from reyk, revived by Aisha Tammy, with input from
+	  many, especially Robert Klein.
+
+2020-09-03 19:09  martijn
+
+	* lib/libutil/ber.c: Missed one case of errno not being set in
+	  previous.
+
+	  double check and OK tb@
+
+2020-09-03 17:01  martijn
+
+	* lib/libutil/ber.c: Make sure ober_read_elements sets errno on
+	  every case where NULL is returned.
+
+	  OK deraadt@ tb@
+
+2020-07-06 13:33  pirofti
+
+	* lib/libc/gen/auth_subr.c: Add support for timeconting in
+	  userland.
+
+	  This diff exposes parts of clock_gettime(2) and gettimeofday(2)
+	  to userland via libc eliberating processes from the need for a
+	  context switch everytime they want to count the passage of time.
+
+	  If a timecounter clock can be exposed to userland than it needs
+	  to set its tc_user member to a non-zero value. Tested with one or
+	  multiple counters per architecture.
+
+	  The timing data is shared through a pointer found in the new ELF
+	  auxiliary vector AUX_openbsd_timekeep containing timehands
+	  information that is frequently updated by the kernel.
+
+	  Timing differences between the last kernel update and the current
+	  time are adjusted in userland by the tc_get_timecount() function
+	  inside the MD usertc.c file.
+
+	  This permits a much more responsive environment, quite visible in
+	  browsers, office programs and gaming (apparently one is are able
+	  to fly in Minecraft now).
+
+	  Tested by robert@, sthen@, naddy@, kmos@, phessler@, and many
+	  others!
+
+	  OK from at least kettenis@, cheloha@, naddy@, sthen@
+
+2020-06-24 07:20  tb
+
+	* usr.sbin/ldapd/: ldapd.conf.5, ldapd.h, parse.y: Using the
+	  "ldaps" or "tls" keywords in ldapd.conf currently enables all
+	  protocols and ciphers. So you get a TLS server speaking TLSv1.0
+	  and supporting cipher suites with RC4 and 3DES encryption, all of
+	  which should be considered broken. There is no way of disabling
+	  TLSv1.0 and TLSv1.1 in ldapd. All this is also not very clearly
+	  called out in the documentation.
+
+	  This commit switches the defaults to using the libtls defaults
+	  for both protocols and ciphers. If compatibility with the
+	  insecure legacy protocols and ciphers is needed, use the "legacy"
+	  keyword before "tls" or "ldaps" in ldapd.conf.
+
+	  tested by abieber.  inoguchi agrees with the direction.
+
+	  ok beck
+
+2020-03-05 07:39  martijn
+
+	* usr.sbin/: ldapctl/ldapctl.c, ldapd/ldapd.c, ldapd/namespace.c:
+	  Fix ldapd datadir location.
+
+	  Diff from roklein <at> roklein <dot> de
+
+	  OK claudio@
+
+2020-02-10 13:18  schwarze
+
+	* usr.sbin/ldapd/ldapd.conf.5: briefly mention /etc/examples/ in
+	  the FILES section of all the manual pages that document the
+	  corresponding configuration files; OK jmc@, and general direction
+	  discussed with many
+
+2020-01-28 15:51  bket
+
+	* usr.sbin/ldapd/search.c: usr.sbin/ldapd: replace TAILQ
+	  concatenation loop with TAILQ_CONCAT
+
+	  OK florian@
+
+2020-01-11 11:40  espie
+
+	* regress/usr.sbin/ldapd/Makefile: fix .END to not return an error,
+	  so that make can actually NOT ignore the error.
+
+	  okay bluhm@
+
+2019-12-31 10:34  martijn
+
+	* lib/libutil/ber.h: Increase BER_MAX_OID_LEN from 32 to 64. Not
+	  every snmp OID found in the wild fits inside 32 elements, like
+	  UsmUserEntry objects.
+
+	  OK rob@, claudio@
+
+2019-12-04 09:52  deraadt
+
+	* lib/libc/gen/: auth_subr.c, authenticate.c: This is
+	  6.6/010_libcauth.patch.sig
+
+	  libc's authentication privsep layer performed insufficient
+	  username validation.	Repair work mostly by markus and millert,
+	  first of all solving the primary problem, then adding some
+	  additional validation points.  And then futher validation in
+	  login and su.  Reported by Qualys
+
+2019-12-04 09:51  deraadt
+
+	* lib/libc/gen/: auth_subr.c, authenticate.c: This is
+	  6.5/021_libcauth.patch.sig
+
+	  libc's authentication privsep layer performed insufficient
+	  username validation.	Repair work mostly by markus and millert,
+	  first of all solving the primary problem, then adding some
+	  additional validation points.  And then futher validation in
+	  login and su.  Reported by Qualys
+
+2019-12-04 06:25  deraadt
+
+	* lib/libc/gen/: auth_subr.c, authenticate.c: libc's authentication
+	  privsep layer performed insufficient username validation.  Repair
+	  work mostly by markus and millert, first of all solving the
+	  primary problem, then adding some additional validation points.
+	  And then futher validation in login and su.  This will be
+	  6.5/021_libcauth.patch.sig and 6.6/010_libcauth.patch.sig
+	  Reported by Qualys
+
 2019-10-27 20:05  tb
 
 	* lib/libutil/ber.c, lib/libutil/ber.h, usr.sbin/ldapctl/ldapctl.c,

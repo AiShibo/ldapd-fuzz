@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth_subr.c,v 1.53 2019/06/28 13:32:41 deraadt Exp $	*/
+/*	$OpenBSD: auth_subr.c,v 1.56 2020/10/13 04:42:28 guenther Exp $	*/
 
 /*
  * Copyright (c) 2000-2002,2004 Todd C. Miller <millert@openbsd.org>
@@ -134,7 +134,7 @@ static char *_auth_next_arg(auth_session_t *);
 /*
  * Set up a known environment for all authentication scripts.
  */
-static char *auth_environ[] = {
+static char * const auth_environ[] = {
 	"PATH=" _PATH_DEFPATH,
 	"SHELL=" _PATH_BSHELL,
 	NULL,
@@ -304,7 +304,8 @@ auth_challenge(auth_session_t *as)
 	char path[PATH_MAX];
 	int len;
 
-	if (as == NULL || as->style == NULL || as->name == NULL)
+	if (as == NULL || as->style == NULL || as->name == NULL ||
+	    !_auth_validuser(as->name))
 		return (NULL);
 
 	len = snprintf(path, sizeof(path), _PATH_AUTHPROG "%s", as->style);
@@ -316,7 +317,7 @@ auth_challenge(auth_session_t *as)
 	free(as->challenge);
 	as->challenge = NULL;
 
-	auth_call(as, path, as->style, "-s", "challenge", as->name,
+	auth_call(as, path, as->style, "-s", "challenge", "--", as->name,
 	    as->class, (char *)NULL);
 	if (as->state & AUTH_CHALLENGE)
 		as->challenge = auth_getvalue(as, "challenge");
@@ -476,6 +477,10 @@ auth_setitem(auth_session_t *as, auth_item_t item, char *value)
 	case AUTHV_NAME:
 		if (value == as->name)
 			return (0);
+		if (value != NULL && !_auth_validuser(value)) {
+			errno = EINVAL;
+			return (-1);
+		}
 		if (value != NULL && (value = strdup(value)) == NULL)
 			return (-1);
 		free(as->name);
@@ -747,7 +752,7 @@ auth_check_expire(auth_session_t *as)
 
 	if (as->pwd && (quad_t)as->pwd->pw_expire != 0) {
 		if (as->now.tv_sec == 0)
-			gettimeofday(&as->now, NULL);
+			WRAP(gettimeofday)(&as->now, NULL);
 		if ((quad_t)as->now.tv_sec >= (quad_t)as->pwd->pw_expire) {
 			as->state &= ~AUTH_ALLOW;
 			as->state |= AUTH_EXPIRED;
@@ -774,7 +779,7 @@ auth_check_change(auth_session_t *as)
 
 	if (as->pwd && (quad_t)as->pwd->pw_change) {
 		if (as->now.tv_sec == 0)
-			gettimeofday(&as->now, NULL);
+			WRAP(gettimeofday)(&as->now, NULL);
 		if (as->now.tv_sec >= (quad_t)as->pwd->pw_change) {
 			as->state &= ~AUTH_ALLOW;
 			as->state |= AUTH_PWEXPIRED;
@@ -821,6 +826,7 @@ auth_call(auth_session_t *as, char *path, ...)
 		argv[argc++] = "-v";
 		argv[argc++] = "fd=4";		/* AUTH_FD, see below */
 	}
+	/* XXX - fail if out of space in argv */
 	for (opt = as->optlist; opt != NULL; opt = opt->next) {
 		if (argc < Nargc - 2) {
 			argv[argc++] = "-v";

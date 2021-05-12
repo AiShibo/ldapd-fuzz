@@ -767,7 +767,11 @@ auth_check_expire(auth_session_t *as)
 
 	if (as->pwd && (quad_t)as->pwd->pw_expire != 0) {
 		if (as->now.tv_sec == 0)
+#ifdef __OpenBSD__
 			WRAP(gettimeofday)(&as->now, NULL);
+#else
+			gettimeofday(&as->now, NULL);
+#endif
 		if ((quad_t)as->now.tv_sec >= (quad_t)as->pwd->pw_expire) {
 			as->state &= ~AUTH_ALLOW;
 //FIXME			as->state |= AUTH_EXPIRED;
@@ -794,7 +798,11 @@ auth_check_change(auth_session_t *as)
 
 	if (as->pwd && (quad_t)as->pwd->pw_change) {
 		if (as->now.tv_sec == 0)
+#ifdef __OpenBSD__
 			WRAP(gettimeofday)(&as->now, NULL);
+#else
+			gettimeofday(&as->now, NULL);
+#endif
 		if (as->now.tv_sec >= (quad_t)as->pwd->pw_change) {
 			as->state &= ~AUTH_ALLOW;
 //FIXME			as->state |= AUTH_PWEXPIRED;

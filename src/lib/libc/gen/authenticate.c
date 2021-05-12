@@ -177,6 +177,7 @@ auth_cat(char *file)
 	return (1);
 }
 DEF_WEAK(auth_cat);
+#endif
 
 int
 _auth_validuser(const char *name)
@@ -189,6 +190,7 @@ _auth_validuser(const char *name)
 	return 1;
 }
 
+#ifdef __OpenBSD__
 int
 auth_approval(auth_session_t *as, login_cap_t *lc, char *name, char *type)
 {

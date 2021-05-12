@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.16 2019/05/11 17:46:02 rob Exp $
+#	$OpenBSD: Makefile,v 1.17 2020/09/19 09:46:04 tb Exp $
 
 LOCALBASE?=	/usr/local
 PROG=		ldapd
@@ -33,7 +33,8 @@ LDFLAGS+=	-L${.CURDIR}/../../../libevent/src/lib/libevent \
 		-L ${LOCALBASE}/lib
 CLEANFILES+=	y.tab.h parse.c
 
-SCHEMA_FILES=	core.schema \
+SCHEMA_FILES=	bsd.schema \
+		core.schema \
 		inetorgperson.schema \
 		nis.schema
 

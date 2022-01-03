@@ -1,3 +1,155 @@
+2021-12-20 13:26  claudio
+
+	* usr.sbin/ldapd/: attributes.c, modify.c: When removing the last
+	  value from an attribute in ldap_del_values() the actuall
+	  attribute needs to removed instead of leaving back an empty
+	  attribute. Empty attributes are not valid and fail later on in
+	  ldap_modify(). By calling ldap_del_attribute() in this case
+	  properly removes the attribute and with that validate_entry() no
+	  longer fails later on.  OK jmatthew@
+
+2021-12-20 13:18  claudio
+
+	* usr.sbin/ldapd/validate.c: Add some debug messages in
+	  validate_entry() that explain why LDAP_INVALID_SYNTAX is
+	  returned.  OK jmatthew@
+
+2021-12-19 12:19  claudio
+
+	* usr.sbin/ldapd/ldape.c: log_warn -> log_warnx since the warning
+	  printed uses tls_error() and therefor printing the errno as well
+	  makes no sense.
+
+2021-12-15 20:43  tb
+
+	* usr.sbin/ldapd/util.c: include unistd.h directly rather than
+	  pulling it in via zlib's zconf.h (needed for getdtablecount).
+
+2021-12-15 11:36  jmatthew
+
+	* usr.sbin/ldapd/ldapd.c: ldapd always uses O_CREAT when reopening
+	  database files, so the database directory must be unveiled with
+	  "rwc" rather than just "rw".
+
+	  ok deraadt@ mestre@
+
+2021-12-15 04:00  deraadt
+
+	* usr.sbin/ldapd/: ldapd.c, ldapd.h, ldape.c: PATH_MAX+1 rarely
+	  makes sense, and abort if this happens in the imsg.  ok jmatthew
+	  millert
+
+2021-12-13 18:28  deraadt
+
+	* usr.sbin/ldapd/log.h: including sys/cdefs.h manually started as a
+	  result of netbsd trying to macro-build a replacement for sccsid,
+	  and was done without any concern for namespace damage.
+	  Unfortunately this practice started infecting other code as
+	  others were unaware they didn't need the file.  ok millert
+	  guenther
+
+2021-10-31 16:42  tb
+
+	* lib/libutil/ber.h: Bump BER_MAX_OID_LEN to 128
+
+	  From martijn, discussed with claudio, ok sthen
+
+2021-10-24 21:24  deraadt
+
+	* lib/libc/gen/authenticate.c: For open/openat, if the flags
+	  parameter does not contain O_CREAT, the 3rd (variadic) mode_t
+	  parameter is irrelevant.  Many developers in the past have passed
+	  mode_t (0, 044, 0644, or such), which might lead future people to
+	  copy this broken idiom, and perhaps even believe this parameter
+	  has some meaning or implication or application. Delete them all.
+	  This comes out of a conversation where tb@ noticed that a strange
+	  (but intentional) pledge behaviour is to always knock-out
+	  high-bits from mode_t on a number of system calls as a safety
+	  factor, and his bewilderment that this appeared to be happening
+	  against valid modes (at least visually), but no sorry, they are
+	  all irrelevant junk.	They could all be 0xdeafbeef.  ok millert
+
+2021-10-21 08:17  martijn
+
+	* lib/libutil/ber.c: Sync ober_oid_cmp with ax_oid_cmp from
+	  libagentx.  This flips the returned signedness and adds the
+	  weight of 2 for parent-child relationship in both direction.
+
+	  This makes ober_oid_cmp consistent with the rest of the *_cmp
+	  based functions.
+
+	  OK tb@
+
+2021-10-15 15:01  naddy
+
+	* usr.sbin/ldapd/parse.y: Don't declare variables as "unsigned char
+	  *" that are passed to functions that take "char *" arguments.
+	  Where such chars are assigned to int or passed to ctype
+	  functions, explicitly cast them to unsigned char.
+
+	  For OpenBSD's clang, -Wpointer-sign has been disabled by default,
+	  but when the parse.y code was built elsewhere, the compiler would
+	  complain.
+
+	  With help from millert@ ok benno@ deraadt@
+
+2021-10-07 11:35  claudio
+
+	* usr.sbin/ldapd/parse.y: Call normalize_dn() on the newly added
+	  namespace so that later compares with normalized basedns work.
+	  Seems all other DN attributes in parse.y pass through
+	  normalize_dn() so this seems to be the last one missing out.
+	  With this configs using capitalized namespace DN like
+	  o=OpenBSD,c=CA will actually work.  OK kn@ gsoares@
+
+2021-10-07 11:32  claudio
+
+	* usr.sbin/ldapd/parse.y: Change host() error check to the more
+	  simple for of != 1.  Host() return 1 on success and 0 or -1 on
+	  failure.  OK kn@ gsoares@
+
+2021-10-05 17:41  anton
+
+	* regress/usr.sbin/ldapd/Makefile: add missing sudo
+
+2021-08-31 23:33  bluhm
+
+	* share/mk/bsd.regress.mk: Make include bsd.prog.mk is supporting
+	  PROGS for a while.  Allow multiple programs also in
+	  bsd.regress.mk for consistency.  OK anton@
+
+2021-08-29 13:27  martijn
+
+	* lib/libutil/: ber.c, ber.h: Add ober_dup. Needed for upcoming
+	  SNMPv3 support for trap receiver in snmpd(8).
+
+	  OK jmatthew@ OK deraadt@ for bumping libutil now.
+
+2021-07-14 13:33  kn
+
+	* usr.sbin/ldapd/ldapd.c: Remove unneeded calls to tls_init(3)
+
+	  As per the manual and lib/libtls/tls.c revision 1.79 from 2018
+	  "Automatically handle library initialisation for libtls."
+	  initialisation is handled automatically by other tls_*(3)
+	  functions.
+
+	  Remove explicit tls_init() calls from base to not give the
+	  impression of it being needed.
+
+	  Feedback tb OK Tests mestre
+
+2021-07-12 15:09  beck
+
+	* usr.sbin/ldapd/ldapd.c: Change the error reporting pattern
+	  throughout the tree when unveil fails to report the path that the
+	  failure occured on. Suggested by deraadt@ after some tech
+	  discussion.
+
+	  Work done and verified by Ashton Fagg <ashton@fagg.id.au>
+
+	  ok deraadt@ semarie@ claudio@
+
 2021-05-02 14:39  martijn
 
 	* usr.sbin/ldapd/parse.y: Fix having hostnames in the listen on

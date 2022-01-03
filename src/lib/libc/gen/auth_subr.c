@@ -71,10 +71,10 @@
 
 #include <login_cap.h>
 
-
 #ifndef __OpenBSD__
 #include <libutil.h>
 #define	DEF_WEAK(x)
+int _auth_validuser(const char *name);
 #endif
 
 #define	MAXSPOOLSIZE	(8*1024)	/* Spool up to 8K of back info */

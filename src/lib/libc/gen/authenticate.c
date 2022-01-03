@@ -54,6 +54,7 @@
 
 #ifndef __OpenBSD__
 #define DEF_WEAK(x)
+int _auth_validuser(const char *name);
 #endif
 
 #ifdef __OpenBSD__

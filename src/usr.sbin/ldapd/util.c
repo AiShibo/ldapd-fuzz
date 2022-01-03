@@ -35,6 +35,10 @@
 #include "ldapd.h"
 #include "log.h"
 
+#ifndef __OpenBSD__
+#include "getdtablecount.h"
+#endif
+
 int
 bsnprintf(char *str, size_t size, const char *format, ...)
 {

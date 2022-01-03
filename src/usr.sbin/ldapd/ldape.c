@@ -24,6 +24,7 @@
 #include <sys/wait.h>
 
 #ifndef __OpenBSD__
+#include <netinet/in.h>
 #include <sys/param.h>
 #endif
 

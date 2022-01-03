@@ -112,6 +112,11 @@
 
 	* regress/usr.sbin/ldapd/Makefile: add missing sudo
 
+2021-09-02 21:09  deraadt
+
+	* usr.bin/ldap/ldapclient.c: rather than using sys/param.h, define
+	  a local replacement MINIMUM() instead of MIN(), as done elsewhere
+
 2021-08-31 23:33  bluhm
 
 	* share/mk/bsd.regress.mk: Make include bsd.prog.mk is supporting
@@ -180,6 +185,11 @@
 	  in the future.
 
 	  Manpage feedback and OK claudio@, jmc@ OK claudio@
+
+2021-02-10 06:52  jmc
+
+	* usr.bin/ldap/ldap.1: some spacing/grammar fixes from dave
+	  voutila;
 
 2021-01-28 19:56  martijn
 
@@ -452,16 +462,16 @@
 
 2019-10-27 20:05  tb
 
-	* lib/libutil/ber.c, lib/libutil/ber.h, usr.sbin/ldapctl/ldapctl.c,
-	  usr.sbin/ldapd/attributes.c, usr.sbin/ldapd/auth.c,
-	  usr.sbin/ldapd/conn.c, usr.sbin/ldapd/filter.c,
-	  usr.sbin/ldapd/index.c, usr.sbin/ldapd/ldape.c,
-	  usr.sbin/ldapd/logmsg.c, usr.sbin/ldapd/modify.c,
-	  usr.sbin/ldapd/schema.c, usr.sbin/ldapd/search.c,
-	  usr.sbin/ldapd/util.c, usr.sbin/ldapd/validate.c: The ber_*
-	  namespace is used by liblber since time immemorial, so move our
-	  BER API to the unused ober_* prefix to avoid some breakage in
-	  ports.
+	* lib/libutil/ber.c, lib/libutil/ber.h, usr.bin/ldap/aldap.c,
+	  usr.sbin/ldapctl/ldapctl.c, usr.sbin/ldapd/attributes.c,
+	  usr.sbin/ldapd/auth.c, usr.sbin/ldapd/conn.c,
+	  usr.sbin/ldapd/filter.c, usr.sbin/ldapd/index.c,
+	  usr.sbin/ldapd/ldape.c, usr.sbin/ldapd/logmsg.c,
+	  usr.sbin/ldapd/modify.c, usr.sbin/ldapd/schema.c,
+	  usr.sbin/ldapd/search.c, usr.sbin/ldapd/util.c,
+	  usr.sbin/ldapd/validate.c: The ber_* namespace is used by liblber
+	  since time immemorial, so move our BER API to the unused ober_*
+	  prefix to avoid some breakage in ports.
 
 	  Problem diagnosed by jmatthew with ber_free() in samba, but there
 	  are many others as pointed out by sthen.
@@ -482,22 +492,36 @@
 
 2019-10-24 12:39  tb
 
-	* lib/libutil/ber.c, lib/libutil/ber.h, usr.sbin/ldapctl/ldapctl.c,
-	  usr.sbin/ldapd/attributes.c, usr.sbin/ldapd/auth.c,
-	  usr.sbin/ldapd/conn.c, usr.sbin/ldapd/filter.c,
-	  usr.sbin/ldapd/index.c, usr.sbin/ldapd/ldape.c,
-	  usr.sbin/ldapd/logmsg.c, usr.sbin/ldapd/modify.c,
-	  usr.sbin/ldapd/schema.c, usr.sbin/ldapd/search.c,
-	  usr.sbin/ldapd/util.c, usr.sbin/ldapd/validate.c: The ber_*
-	  namespace is used by liblber since time immemorial, so move our
-	  BER API to the unused ober_* prefix to avoid some breakage in
-	  ports.
+	* lib/libutil/ber.c, lib/libutil/ber.h, usr.bin/ldap/aldap.c,
+	  usr.sbin/ldapctl/ldapctl.c, usr.sbin/ldapd/attributes.c,
+	  usr.sbin/ldapd/auth.c, usr.sbin/ldapd/conn.c,
+	  usr.sbin/ldapd/filter.c, usr.sbin/ldapd/index.c,
+	  usr.sbin/ldapd/ldape.c, usr.sbin/ldapd/logmsg.c,
+	  usr.sbin/ldapd/modify.c, usr.sbin/ldapd/schema.c,
+	  usr.sbin/ldapd/search.c, usr.sbin/ldapd/util.c,
+	  usr.sbin/ldapd/validate.c: The ber_* namespace is used by liblber
+	  since time immemorial, so move our BER API to the unused ober_*
+	  prefix to avoid some breakage in ports.
 
 	  Problem diagnosed by jmatthew with ber_free() in samba, but there
 	  are many others as pointed out by sthen.
 
 	  tests & ok rob ok sthen (who had an almost identical diff for
 	  libutil) "go head hit it" deraadt
+
+2019-09-10 14:35  martijn
+
+	* usr.bin/ldap/aldap.c: During libutil/ber.c r1.12 I made sure that
+	  every element that's requested by ber_scanf_elements must exist.
+
+	  aldap.c apparently abused the old behaviour by always trying to
+	  retrieve the referral element, which according to RFC4511 section
+	  4.1.9 is optional.
+
+	  This diff only requests the referral element if we get a referral
+	  response.
+
+	  OK rob@
 
 2019-08-15 06:11  martijn
 
@@ -650,12 +674,14 @@
 
 2019-05-11 17:46  rob
 
-	* lib/libutil/ber.c, lib/libutil/ber.h, usr.sbin/ldapctl/Makefile,
-	  usr.sbin/ldapd/Makefile, usr.sbin/ldapd/aldap.h,
-	  usr.sbin/ldapd/ber.c, usr.sbin/ldapd/ber.h: The BER API is
-	  currently used by ldap, ldapd, ldapctl, ypldap, snmpd, and
-	  snmpctl. Separate copies of ber.[ch] have existed and been
-	  maintained in sync in ldap, ldapd, ypldap and snmpd.
+	* lib/libutil/ber.c, lib/libutil/ber.h, usr.bin/ldap/Makefile,
+	  usr.bin/ldap/aldap.h, usr.bin/ldap/ber.c, usr.bin/ldap/ber.h,
+	  usr.sbin/ldapctl/Makefile, usr.sbin/ldapd/Makefile,
+	  usr.sbin/ldapd/aldap.h, usr.sbin/ldapd/ber.c,
+	  usr.sbin/ldapd/ber.h: The BER API is currently used by ldap,
+	  ldapd, ldapctl, ypldap, snmpd, and snmpctl. Separate copies of
+	  ber.[ch] have existed and been maintained in sync in ldap, ldapd,
+	  ypldap and snmpd.
 
 	  This commit moves the BER API into /usr/lib/libutil. All current
 	  consumers already link libutil. ldapd and snmpd regress passes,
@@ -667,9 +693,9 @@
 
 2019-04-27 14:58  rob
 
-	* usr.sbin/ldapd/ber.c: Only apply sign extension when less than
-	  eight bytes have been consumed. This fixes a problem when
-	  handling large negative integers.
+	* usr.bin/ldap/ber.c, usr.sbin/ldapd/ber.c: Only apply sign
+	  extension when less than eight bytes have been consumed. This
+	  fixes a problem when handling large negative integers.
 
 	  ok claudio@
 
@@ -695,10 +721,20 @@
 	  a range reduction...	Almost any cast to (unsigned) is a bug.  ok
 	  millert tb benno
 
+2019-01-26 10:58  deraadt
+
+	* usr.bin/ldap/ldapclient.c: avoid double free, instead flowing
+	  through a free(NULL) from Ville Valkonen
+
 2019-01-25 00:19  millert
 
 	* lib/libc/gen/auth_subr.c: I am retiring my old email address;
 	  replace it with my OpenBSD one.
+
+2019-01-17 06:18  tedu
+
+	* usr.bin/ldap/: aldap.c, aldap.h: rm a few more $Id which cannot
+	  be useful
 
 2018-12-05 06:44  claudio
 
@@ -713,14 +749,61 @@
 	  to skip part of its tests, print SKIPPED.  This helps to detect
 	  such incomplete tests.  OK anton@
 
+2018-11-29 14:25  tedu
+
+	* usr.bin/ldap/ldapclient.c: update for libtls default cert
+	  changes.  bonus: this exposed a few missing const qualifiers.
+
 2018-11-27 12:09  martijn
 
 	* usr.sbin/ldapd/: ber.c, ber.h: Sync with ldap(1)
 
+2018-11-27 12:04  martijn
+
+	* usr.bin/ldap/: aldap.c, aldap.h, ber.c, ber.h, ldapclient.c: LDAP
+	  returns values as OCTET STRINGs, which can be LDAPStrings, but
+	  isn't always the case. This caused some malformed output when
+	  querying databases returning data containing NUL-bytes. Fix this
+	  by also returning the actual size.
+
+	  With this diff we should produce basically identical output to
+	  openldap's ldapsearch.
+
+	  Lots of back and forths with claudio@
+
+	  OK claudio@
+
 2018-11-20 07:20  martijn
 
-	* usr.sbin/ldapd/ber.c: Fix when ber_free_elements is called with a
-	  NULL-value.  Found via snmpctl snmp walk 127.0.0.1 oid 1
+	* usr.bin/ldap/ber.c, usr.sbin/ldapd/ber.c: Fix when
+	  ber_free_elements is called with a NULL-value.  Found via snmpctl
+	  snmp walk 127.0.0.1 oid 1
+
+	  OK claudio@
+
+2018-11-07 13:58  martijn
+
+	* usr.bin/ldap/ldapclient.c: RFC2849 requires us to have 2 colons
+	  after the value-spec.
+
+	  OK claudio@
+
+2018-11-06 20:38  jsing
+
+	* usr.bin/ldap/ldapclient.c: Use TLS_CA_CERT_FILE instead of a
+	  separate define.
+
+	  ok beck@ bluhm@ tb@
+
+2018-11-06 14:15  martijn
+
+	* usr.bin/ldap/ldapclient.c: Fix base64 outlen calculation.
+
+	  OK claudio@
+
+2018-11-06 14:14  martijn
+
+	* usr.bin/ldap/ldapclient.c: Implement SAFE-INIT-CHAR.
 
 	  OK claudio@
 
@@ -747,6 +830,17 @@
 	      (where one commonly does line continuations in strings).
 
 	  OK deraadt@, OK millert@
+
+2018-10-23 08:28  martijn
+
+	* usr.bin/ldap/ldapclient.c: [no log message]
+
+2018-10-23 08:24  martijn
+
+	* usr.bin/ldap/ldapclient.c: Fix off by one when wrapping long LDIF
+	  lines.
+
+	  OK reyk@
 
 2018-10-05 11:15  bluhm
 
@@ -777,46 +871,58 @@
 
 2018-08-12 22:04  rob
 
-	* usr.sbin/ldapd/: ber.c, ber.h, ldape.c: Change
-	  ber_write_elements() to return ssize_t instead of int.
+	* usr.bin/ldap/aldap.c, usr.bin/ldap/ber.c, usr.bin/ldap/ber.h,
+	  usr.sbin/ldapd/ber.c, usr.sbin/ldapd/ber.h,
+	  usr.sbin/ldapd/ldape.c: Change ber_write_elements() to return
+	  ssize_t instead of int.
 
 	  ok claudio@
 
 2018-08-03 01:51  rob
 
-	* usr.sbin/ldapd/: ber.c, ber.h: Place a limit on the number of
-	  elements in a ber sequence/set. This prevents possible stack
-	  overflow due to recursion in ber_free_elements().
+	* usr.bin/ldap/ber.c, usr.bin/ldap/ber.h, usr.sbin/ldapd/ber.c,
+	  usr.sbin/ldapd/ber.h: Place a limit on the number of elements in
+	  a ber sequence/set. This prevents possible stack overflow due to
+	  recursion in ber_free_elements().
 
 	  ok claudio@
 
+2018-08-01 10:42  rob
+
+	* usr.bin/ldap/ldap.1: Remove midsentence period.
+
 2018-07-31 19:38  rob
 
-	* usr.sbin/ldapd/ber.c: Relocate some public functions above the
-	  internal functions comment.
+	* usr.bin/ldap/ber.c, usr.sbin/ldapd/ber.c: Relocate some public
+	  functions above the internal functions comment.
 
 	  ok claudio@
 
 2018-07-31 11:37  rob
 
-	* usr.sbin/ldapd/ber.c: Fix some debugging output now that ber type
-	  and encoding are unsigned int.
+	* usr.bin/ldap/aldap.c, usr.bin/ldap/ber.c, usr.sbin/ldapd/ber.c:
+	  Fix some debugging output now that ber type and encoding are
+	  unsigned int.
 
 	  ok claudio@
 
 2018-07-31 11:01  claudio
 
-	* usr.sbin/ldapd/: ber.c, ber.h, conn.c, filter.c, ldapd.h,
-	  ldape.c, logmsg.c, search.c: Make ber type and encoding a
-	  unsigned int instead of unsigned long.  This way the size is the
-	  same on all archs and 32bit should be good enough.  OK rob@
+	* usr.sbin/ldapd/ber.c, usr.sbin/ldapd/ber.h,
+	  usr.sbin/ldapd/conn.c, usr.sbin/ldapd/filter.c,
+	  usr.sbin/ldapd/ldapd.h, usr.sbin/ldapd/ldape.c,
+	  usr.sbin/ldapd/logmsg.c, usr.sbin/ldapd/search.c,
+	  usr.bin/ldap/aldap.c, usr.bin/ldap/ber.c, usr.bin/ldap/ber.h:
+	  Make ber type and encoding a unsigned int instead of unsigned
+	  long.  This way the size is the same on all archs and 32bit
+	  should be good enough.  OK rob@
 
 2018-07-13 08:50  rob
 
-	* usr.sbin/ldapd/ber.c: Fix some comments referencing sockets which
-	  are not used by the ber api. The api uses read and write buffers
-	  (byte streams) that are utilized by calling applications which
-	  may or may not use sockets.
+	* usr.bin/ldap/ber.c, usr.sbin/ldapd/ber.c: Fix some comments
+	  referencing sockets which are not used by the ber api. The api
+	  uses read and write buffers (byte streams) that are utilized by
+	  calling applications which may or may not use sockets.
 
 	  ok claudio@
 
@@ -824,8 +930,8 @@
 
 2018-07-13 08:30  rob
 
-	* usr.sbin/ldapd/ber.c: Fix loop condition in ber.c. Discussed with
-	  claudio.
+	* usr.bin/ldap/ber.c, usr.sbin/ldapd/ber.c: Fix loop condition in
+	  ber.c. Discussed with claudio.
 
 	  ok claudio@, jca@
 
@@ -851,7 +957,7 @@
 
 2018-07-09 09:21  jca
 
-	* usr.sbin/ldapd/ber.c: Simplify ber_read()
+	* usr.bin/ldap/ber.c, usr.sbin/ldapd/ber.c: Simplify ber_read()
 
 	  After the removal of fd-based read/writes I could have trimmed
 	  the code further.
@@ -875,24 +981,30 @@
 
 2018-07-04 15:21  rob
 
-	* usr.sbin/ldapd/ber.c: More whitespace.
+	* usr.bin/ldap/ber.c, usr.sbin/ldapd/ber.c: More whitespace.
 
 2018-07-04 13:31  rob
 
-	* usr.sbin/ldapd/ber.c: Cleanup some whitespace.
+	* usr.bin/ldap/ber.c, usr.sbin/ldapd/ber.c: Cleanup some
+	  whitespace.
 
 2018-07-04 13:04  rob
 
-	* usr.sbin/ldapd/ber.c: Relocate the update of br_offs from
-	  ber_read() to ber_readbuf() so ber_getc() can call ber_readbuf()
-	  in all cases. This resolves a problem previously encountered with
-	  SNMPv3 authentication, simplifies the code, and completes a full
-	  synchronization of all ber instances.
+	* usr.bin/ldap/ber.c, usr.sbin/ldapd/ber.c: Relocate the update of
+	  br_offs from ber_read() to ber_readbuf() so ber_getc() can call
+	  ber_readbuf() in all cases. This resolves a problem previously
+	  encountered with SNMPv3 authentication, simplifies the code, and
+	  completes a full synchronization of all ber instances.
 
 	  Proposed by claudio@. Problematic use case in snmpd tested by
 	  sthen@ and me.  ldap(s) appear happy as well.
 
 	  looks good to claudio@
+
+2018-07-04 11:47  jmc
+
+	* usr.bin/ldap/ldap.1: minor tweaks to improve readability; ok rob
+	  reyk
 
 2018-07-04 10:05  rob
 
@@ -901,10 +1013,17 @@
 
 	  Ok benno@
 
+2018-07-04 01:45  rob
+
+	* usr.bin/ldap/ldap.1: Add HISTORY to ldap.1
+
+	  Ok reyk@
+
 2018-07-03 18:49  rob
 
-	* usr.sbin/ldapd/: ber.c, ber.h: Synchronize ber changes from the
-	  snmpd instance to ldap, ldapd, and ypldap.
+	* usr.bin/ldap/ber.c, usr.bin/ldap/ber.h, usr.sbin/ldapd/ber.c,
+	  usr.sbin/ldapd/ber.h: Synchronize ber changes from the snmpd
+	  instance to ldap, ldapd, and ypldap.
 
 	  See usr.sbin/snmpd/ber.c revision 1.24 commit log for a summary
 	  of these changes (e.g. SNMPv2 traps, User-based Security Model,
@@ -915,23 +1034,34 @@
 
 	  "looks good to me" deraadt@
 
+2018-07-03 10:10  jmc
+
+	* usr.bin/ldap/: ldap.1, ldapclient.c: - instead of trying to show
+	  a 100% accurate synopsis for -H, simplify it and add some
+	  explanatory text: originally from a diff proposed by matthew
+	  martin, with an adjusted text by him
+
+	  - while here, sync synopsis and usage(), and some other minor
+	  tweaks
+
 2018-07-01 20:03  rob
 
-	* usr.sbin/ldapd/ber.c: s/constructive/constructed in DPRINTF
-	  output.
+	* usr.bin/ldap/ber.c, usr.sbin/ldapd/ber.c:
+	  s/constructive/constructed in DPRINTF output.
 
 2018-06-29 18:28  rob
 
-	* usr.sbin/ldapd/: ber.c, ber.h: Consistent use of copyright
-	  notices.
+	* usr.bin/ldap/ber.c, usr.bin/ldap/ber.h, usr.sbin/ldapd/ber.c,
+	  usr.sbin/ldapd/ber.h: Consistent use of copyright notices.
 
 	  Ok reyk@
 
 2018-06-29 15:18  rob
 
-	* usr.sbin/ldapd/ber.c: Synchronize ber.c and ber.h across ldap,
-	  ldapd, and ypldap, and reduce diff with snmpd. More tweaks to
-	  come once things are fully synchronized.
+	* usr.bin/ldap/ber.c, usr.bin/ldap/ber.h, usr.sbin/ldapd/ber.c:
+	  Synchronize ber.c and ber.h across ldap, ldapd, and ypldap, and
+	  reduce diff with snmpd. More tweaks to come once things are fully
+	  synchronized.
 
 	  Feedback from claudio and Robert Klein.
 
@@ -949,15 +1079,77 @@
 	* usr.sbin/ldapd/index.c: avoid passing NULL to asprintf(3) when
 	  there's no parent dn entry OK jca@
 
+2018-06-27 20:38  rob
+
+	* usr.bin/ldap/ber.c: Synchronize some comments.
+
+2018-06-27 20:11  rob
+
+	* usr.bin/ldap/ber.c: Consistent use of calloc in ber.c.
+
+	  Ok claudio@, "looks right" gsoares@
+
 2018-06-27 13:22  rob
 
-	* usr.sbin/ldapd/ber.c: Synchronize correct processing of
-	  BER_TYPE_EOC. Fixes support for empty LDAP passwords. A similar
-	  fix was applied to snmpd in 2010 (rev 1.23).
+	* usr.bin/ldap/ber.c, usr.sbin/ldapd/ber.c: Synchronize correct
+	  processing of BER_TYPE_EOC. Fixes support for empty LDAP
+	  passwords. A similar fix was applied to snmpd in 2010 (rev 1.23).
 
 	  Pointers from Reyk.
 
 	  Ok claudio@
+
+2018-06-26 09:47  reyk
+
+	* usr.bin/ldap/: ldap.1, ldapclient.c: Allow to read the password
+	  from a file with -y
+
+	  Pointed out by Tim Chase
+
+	  OK rob@ gsoares@ jmc@
+
+2018-06-21 08:27  reyk
+
+	* usr.bin/ldap/aldap.c: Fix DEBUG message
+
+2018-06-17 23:12  jmc
+
+	* usr.bin/ldap/ldap.1: "filter" is optional; from matthew martin
+
+2018-06-13 18:26  jmc
+
+	* usr.bin/ldap/ldap.1: fix some formatting which groff was
+	  complaining about; ok reyk
+
+2018-06-13 17:02  jmc
+
+	* usr.bin/ldap/ldap.1: various tweaks;
+
+2018-06-13 15:51  reyk
+
+	* usr.bin/ldap/ldap.1: Update AuthorizedKeysCommand example: only
+	  match ^sshPublicKey: lines.
+
+2018-06-13 15:45  reyk
+
+	* usr.bin/ldap/: Makefile, aldap.c, aldap.h, ber.c, ber.h, ldap.1,
+	  ldapclient.c, log.c, log.h: Import ldap(1), a simple ldap search
+	  client.
+
+	  We have an ldapd(8) server and ypldap in base, so it makes sense
+	  to have a simple LDAP client without depending on the OpenLDAP
+	  package.  This tool can be used in an ssh(1)
+	  AuthorizedKeysCommand script.
+
+	  With feedback from many including millert@ schwarze@ gilles@ dlg@
+	  jsing@
+
+	  OK deraadt@
+
+2018-06-13 15:45  reyk
+
+	* usr.bin/ldap/: Makefile, aldap.c, aldap.h, ber.c, ber.h, ldap.1,
+	  ldapclient.c, log.c, log.h: Initial revision
 
 2018-06-11 18:19  denis
 

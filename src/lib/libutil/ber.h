@@ -1,4 +1,4 @@
-/*	$OpenBSD: ber.h,v 1.3 2019/12/31 10:34:14 martijn Exp $ */
+/*	$OpenBSD: ber.h,v 1.5 2021/10/31 16:42:08 tb Exp $ */
 
 /*
  * Copyright (c) 2007, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -80,8 +80,8 @@ struct ber {
 #define BER_CLASS_MASK		0x3
 
 /* common definitions */
-#define BER_MIN_OID_LEN		2		/* OBJECT */
-#define BER_MAX_OID_LEN		64		/* OBJECT */
+#define BER_MIN_OID_LEN		2		/* X.690 section 8.19.5 */
+#define BER_MAX_OID_LEN		128		/* RFC 2578 section 7.1.3 */
 #define BER_MAX_SEQ_ELEMENTS	USHRT_MAX	/* 65535 */
 
 struct ber_oid {
@@ -137,6 +137,7 @@ ssize_t			 ober_write_elements(struct ber *, struct ber_element *);
 void			 ober_set_readbuf(struct ber *, void *, size_t);
 struct ber_element	*ober_read_elements(struct ber *, struct ber_element *);
 off_t			 ober_getpos(struct ber_element *);
+struct ber_element	*ober_dup(struct ber_element *);
 void			 ober_free_element(struct ber_element *);
 void			 ober_free_elements(struct ber_element *);
 size_t			 ober_calc_len(struct ber_element *);

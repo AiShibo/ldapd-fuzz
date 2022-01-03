@@ -1,4 +1,4 @@
-/*	$OpenBSD: ber.c,v 1.21 2021/02/22 17:15:02 martijn Exp $ */
+/*	$OpenBSD: ber.c,v 1.23 2021/10/21 08:17:33 martijn Exp $ */
 
 /*
  * Copyright (c) 2007, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -473,26 +473,21 @@ ober_string2oid(const char *oidstr, struct ber_oid *o)
 int
 ober_oid_cmp(struct ber_oid *a, struct ber_oid *b)
 {
-	size_t	 i;
-	for (i = 0; i < a->bo_n && i < b->bo_n; i++) {
-		if (a->bo_id[i] == b->bo_id[i])
-			continue;
-		else if (a->bo_id[i] < b->bo_id[i]) {
-			/* b is a successor of a */
-			return (1);
-		} else {
-			/* b is a predecessor of a */
-			return (-1);
-		}
-	}
-	/* b is larger, but a child of a */
-	if (a->bo_n < b->bo_n)
-		return (2);
-	/* b is a predecessor of a */
-	if (a->bo_n > b->bo_n)
-		return -1;
+	size_t	 i, min;
 
-	/* b and a are identical */
+	min = a->bo_n < b->bo_n ? a->bo_n : b->bo_n;
+	for (i = 0; i < min; i++) {
+		if (a->bo_id[i] < b->bo_id[i])
+			return (-1);
+		if (a->bo_id[i] > b->bo_id[i])
+			return (1);
+	}
+	/* a is parent of b */
+	if (a->bo_n < b->bo_n)
+		return (-2);
+	/* a is child of b */
+	if (a->bo_n > b->bo_n)
+		return 2;
 	return (0);
 }
 
@@ -924,6 +919,43 @@ off_t
 ober_getpos(struct ber_element *elm)
 {
 	return elm->be_offs;
+}
+
+struct ber_element *
+ober_dup(struct ber_element *orig)
+{
+	struct ber_element *new;
+
+	if ((new = malloc(sizeof(*new))) == NULL)
+		return NULL;
+	memcpy(new, orig, sizeof(*new));
+	new->be_next = NULL;
+	new->be_sub = NULL;
+
+	if (orig->be_next != NULL) {
+		if ((new->be_next = ober_dup(orig->be_next)) == NULL)
+			goto fail;
+	}
+	if (orig->be_encoding == BER_TYPE_SEQUENCE ||
+	    orig->be_encoding == BER_TYPE_SET) {
+		if (orig->be_sub != NULL) {
+			if ((new->be_sub = ober_dup(orig->be_sub)) == NULL)
+				goto fail;
+		}
+	} else if (orig->be_encoding == BER_TYPE_OCTETSTRING ||
+	    orig->be_encoding == BER_TYPE_BITSTRING ||
+	    orig->be_encoding == BER_TYPE_OBJECT) {
+		if (orig->be_val != NULL) {
+			if ((new->be_val = malloc(orig->be_len)) == NULL)
+				goto fail;
+			memcpy(new->be_val, orig->be_val, orig->be_len);
+		}
+	} else
+		new->be_numeric = orig->be_numeric;
+	return new;
+ fail:
+	ober_free_elements(new);
+	return NULL;
 }
 
 void

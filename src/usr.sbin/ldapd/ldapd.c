@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldapd.c,v 1.27 2021/01/27 22:12:28 rob Exp $ */
+/*	$OpenBSD: ldapd.c,v 1.31 2021/12/15 11:36:40 jmatthew Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -183,7 +183,6 @@ main(int argc, char *argv[])
 
 	log_setverbose(verbose);
 	stats.started_at = time(0);
-	tls_init();
 
 	if (parse_config(conffile) != 0)
 		exit(2);
@@ -238,15 +237,15 @@ main(int argc, char *argv[])
 
 #ifdef __OpenBSD__
 	if (unveil(_PATH_NOLOGIN, "r") == -1)
-		err(1, "unveil");
+		err(1, "unveil %s", _PATH_NOLOGIN);
 	if (unveil(_PATH_LOGIN_CONF, "r") == -1)
-		err(1, "unveil");
+		err(1, "unveil %s", _PATH_LOGIN_CONF);
 	if (unveil(_PATH_LOGIN_CONF ".db", "r") == -1)
-		err(1, "unveil");
+		err(1, "unveil %s.db", _PATH_LOGIN_CONF);
 	if (unveil(_PATH_AUTHPROGDIR, "x") == -1)
-		err(1, "unveil");
-	if (unveil(datadir, "rw") == -1)
-		err(1, "unveil");
+		err(1, "unveil %s", _PATH_AUTHPROGDIR);
+	if (unveil(datadir, "rwc") == -1)
+		err(1, "unveil %s", datadir);
 	if (unveil(NULL, NULL) == -1)
 		err(1, "unveil");
 
@@ -384,8 +383,8 @@ ldapd_open_request(struct imsgev *iev, struct imsg *imsg)
 	if (imsg->hdr.len != sizeof(*oreq) + IMSG_HEADER_SIZE)
 		fatal("invalid size of open request");
 
-	/* make sure path is null-terminated */
-	oreq->path[PATH_MAX] = '\0';
+	if (oreq->path[PATH_MAX-1] != '\0')
+		fatal("bogus path");
 
 	if (strncmp(oreq->path, datadir, strlen(datadir)) != 0) {
 		log_warnx("refusing to open file %s", oreq->path);

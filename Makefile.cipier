@@ -1,7 +1,7 @@
 # $FreeBSD$
 
 PORTNAME=	ldapd
-PORTVERSION=	6.6.20191121
+PORTVERSION=	7.0.20220129
 CATEGORIES=	www
 MASTER_SITES=	OPENBSD/LibreSSL:libressl
 DISTFILES=	libressl-${SSL_VERSION}.tar.gz:libressl
@@ -11,7 +11,7 @@ COMMENT=	OpenBSD ldap server
 
 LICENSE=	BSD3CLAUSE
 
-SSL_VERSION=	3.0.2
+SSL_VERSION=	3.4.2
 LIBEVENT_VERSION=	6.6.20191030
 LIBIMSG_VERSION=6.5.20190710
 USE_GITHUB=	yes
@@ -50,6 +50,12 @@ pre-configure:
 	@(cd ${WRKSRC_libevent} && ${SETENV} ${MAKE_ENV} ${MAKE})
 
 post-configure:
+	${REINPLACE_CMD} 's|-ltls|${WRKDIR}/libressl-${SSL_VERSION}/tls/.libs/libtls.a|g' \
+		${WRKSRC}/src/usr.bin/ldap/Makefile
+	${REINPLACE_CMD} 's|-lssl|${WRKDIR}/libressl-${SSL_VERSION}/ssl/.libs/libssl.a|g' \
+		${WRKSRC}/src/usr.bin/ldap/Makefile
+	${REINPLACE_CMD} 's|-lcrypto|${WRKDIR}/libressl-${SSL_VERSION}/crypto/.libs/libcrypto.a|g' \
+		${WRKSRC}/src/usr.bin/ldap/Makefile
 	${REINPLACE_CMD} 's|-ltls|${WRKDIR}/libressl-${SSL_VERSION}/tls/.libs/libtls.a|g' \
 		${WRKSRC}/src/usr.sbin/ldapd/Makefile
 	${REINPLACE_CMD} 's|-lssl|${WRKDIR}/libressl-${SSL_VERSION}/ssl/.libs/libssl.a|g' \

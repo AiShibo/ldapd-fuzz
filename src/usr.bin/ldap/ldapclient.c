@@ -117,8 +117,10 @@ main(int argc, char *argv[])
 	int			 verbose = 1;
 	FILE			*fp;
 
+#ifdef __OpenBSD__
 	if (pledge("stdio inet unix tty rpath dns", NULL) == -1)
 		err(1, "pledge");
+#endif
 
 	log_init(verbose, 0);
 
@@ -263,8 +265,10 @@ main(int argc, char *argv[])
 		}
 	}
 
+#ifdef __OpenBSD__
 	if (pledge("stdio inet unix rpath dns", NULL) == -1)
 		err(1, "pledge");
+#endif
 
 	/* optional search filter */
 	if (argc && strchr(argv[0], '=') != NULL) {
@@ -279,8 +283,10 @@ main(int argc, char *argv[])
 	if (ldapc_connect(&ldap) == -1)
 		errx(1, "LDAP connection failed");
 
+#ifdef __OpenBSD__
 	if (pledge("stdio", NULL) == -1)
 		err(1, "pledge");
+#endif
 
 	if (ldapc_search(&ldap, &ls) == -1)
 		errx(1, "LDAP search failed");

@@ -48,17 +48,17 @@ bootstrap:
 
 connect: bootstrap
 	-ldapsearch -x -H ldapi://%2ftmp%2fldapi | diff - ${OUT}/empty.log
-	-ldapsearch -x -p 6639 -h localhost 2>&1 | diff - ${OUT}/empty.log
-	-ldapsearch -x -p 6636 -h localhost 2>&1 | diff - ${OUT}/empty.log
+	-ldapsearch -x -H ldap://localhost:6639 2>&1 | diff - ${OUT}/empty.log
+	-ldapsearch -x -H ldap://localhost:6636 2>&1 | diff - ${OUT}/empty.log
 
 import: bootstrap
-	ldapadd -f ${.CURDIR}/dit-example.ldif -Dcn=admin,${DIT} -x -w secret -h localhost -p 6639 | diff - ${OUT}/adding.log
-	ldapsearch -x -b ${DIT} -h localhost -p 6639 | diff - ${OUT}/example.log
-	ldapsearch -x -D cn=admin,${DIT} -w secret -b ${DIT} -h localhost -p 6639 | diff - ${OUT}/example.log
+	ldapadd -f ${.CURDIR}/dit-example.ldif -Dcn=admin,${DIT} -x -w secret -H ldap://localhost:6639 | diff - ${OUT}/adding.log
+	ldapsearch -x -b ${DIT} -H ldap://localhost:6639 | diff - ${OUT}/example.log
+	ldapsearch -x -D cn=admin,${DIT} -w secret -b ${DIT} -H ldap://localhost:6639 | diff - ${OUT}/example.log
 
 purge: bootstrap
-	ldapdelete -Dcn=admin,${DIT} -x -w secret -h localhost -p 6639 -r ${DIT}
-	-ldapsearch -x -p 6639 -h localhost 2>&1 | diff - ${OUT}/empty.log
+	ldapdelete -Dcn=admin,${DIT} -x -w secret -H ldap://localhost:6639 -r ${DIT}
+	-ldapsearch -x -H ldap://localhost:6639 2>&1 | diff - ${OUT}/empty.log
 
 perl: bootstrap
 	@-perl ${.CURDIR}/run-tests.pl

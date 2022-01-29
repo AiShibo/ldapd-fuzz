@@ -3,6 +3,13 @@
 *.full
 *.gz
 *.o
+src/regress/usr.sbin/ldapd/dc=bar,dc=quux_data.db
+src/regress/usr.sbin/ldapd/dc=bar,dc=quux_indx.db
+src/regress/usr.sbin/ldapd/dc=example,dc=com_data.db
+src/regress/usr.sbin/ldapd/dc=example,dc=com_indx.db
+src/regress/usr.sbin/ldapd/ldapd1.conf
+src/regress/usr.sbin/ldapd/log
+src/usr.bin/ldap/ldap
 src/usr.sbin/ldapctl/ldapctl
 src/usr.sbin/ldapctl/parse.c
 src/usr.sbin/ldapd/ldapd

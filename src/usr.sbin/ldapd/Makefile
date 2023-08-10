@@ -15,7 +15,12 @@ SRCS+=		ber.c
 .PATH: ${.CURDIR}/../../lib/libc/gen
 SRCS+=		auth_subr.c authenticate.c
 
-LDADD=		-levent -ltls -lssl -lcrypto -lcrypt -lz -lutil -limsg
+LDADD=		../../../libevent/src/lib/libevent/libevent.a
+LDADD+= 	../../../libimsg/src/lib/libutil/libimsg.a
+LDADD+= 	/usr/local/lib/libtls.a \
+		/usr/local/lib/libssl.a \
+		/usr/local/lib/libcrypto.a
+LDADD+= 	-lcrypt -lz -lutil
 DPADD=		${LIBEVENT} ${LIBTLS} ${LIBSSL} ${LIBCRYPTO} ${LIBZ} ${LIBUTIL}
 CFLAGS+=	-I${.CURDIR} -g
 CFLAGS+=	-Wall -Wstrict-prototypes -Wmissing-prototypes
@@ -28,9 +33,6 @@ CFLAGS+=	-I${.CURDIR}/../../../libevent/src/lib/libevent \
 		-I${.CURDIR}/../../include \
 		-I ${LOCALBASE}/include \
 		-D__dead=''
-LDFLAGS+=	-L${.CURDIR}/../../../libevent/src/lib/libevent \
-		-L${.CURDIR}/../../../libimsg/src/lib/libutil \
-		-L ${LOCALBASE}/lib
 CLEANFILES+=	y.tab.h parse.c
 
 SCHEMA_FILES=	bsd.schema \

@@ -1,7 +1,10 @@
 LOCALBASE?=	/usr/local
 PROG=		ldap
 SRCS=		ldapclient.c aldap.c log.c
-LDADD+=		-levent -ltls -lssl -lcrypto -lutil
+LDADD=		../../../libevent/src/lib/libevent/libevent.a
+LDADD+= 	/usr/local/lib/libtls.a \
+		/usr/local/lib/libssl.a \
+		/usr/local/lib/libcrypto.a
 DPADD+=		${LIBEVENT} ${LIBTLS} ${LIBSSL} ${LIBCRYPTO} ${LIBUTIL}
 
 .PATH: ${.CURDIR}/../../lib/libutil
@@ -16,8 +19,5 @@ CFLAGS+=	-I${.CURDIR}/../../../libevent/src/lib/libevent \
 		-I${.CURDIR}/../../lib/libutil \
 		-I${LOCALBASE}/include \
 		-D__dead=''
-
-LDFLAGS+=       -L${.CURDIR}/../../../libevent/src/lib/libevent \
-		-L${LOCALBASE}/lib
 
 .include <bsd.prog.mk>

@@ -11,7 +11,12 @@ SRCS=		ldapctl.c parse.y btree.c log.c logmsg.c util.c \
 .PATH: ${.CURDIR}/../../lib/libutil
 SRCS+=		ber.c
 
-LDADD=		-levent -ltls -lssl -lcrypto -lz -limsg
+LDADD=		../../../libevent/src/lib/libevent/libevent.a
+LDADD+= 	../../../libimsg/src/lib/libutil/libimsg.a
+LDADD+= 	/usr/local/lib/libtls.a \
+		/usr/local/lib/libssl.a \
+		/usr/local/lib/libcrypto.a
+LDADD+= 	-lz
 DPADD=		${LIBEVENT} ${LIBTLS} ${LIBSSL} ${LIBCRYPTO} ${LIBZ} ${LIBUTIL}
 CFLAGS+=	-I${.CURDIR}/../ldapd
 CFLAGS+=	-Wall -Wstrict-prototypes -Wmissing-prototypes
@@ -23,9 +28,6 @@ CFLAGS+=	-I${.CURDIR}/../../../libevent/src/lib/libevent \
 		-I${.CURDIR}/../../lib/libutil \
 		-I ${LOCALBASE}/include \
 		-D__dead=''
-LDFLAGS+=	-L${.CURDIR}/../../../libevent/src/lib/libevent \
-		-L${.CURDIR}/../../../libimsg/src/lib/libutil \
-		-L ${LOCALBASE}/lib
 YFLAGS=
 
 .include <bsd.prog.mk>

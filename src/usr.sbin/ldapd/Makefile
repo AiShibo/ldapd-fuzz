@@ -15,7 +15,7 @@ SRCS+=		ber.c
 .PATH: ${.CURDIR}/../../lib/libc/gen
 SRCS+=		auth_subr.c authenticate.c
 
-LDADD=		-levent -ltls -lssl -lcrypto -lz -lutil -limsg
+LDADD=		-levent -ltls -lssl -lcrypto -lcrypt -lz -lutil -limsg
 DPADD=		${LIBEVENT} ${LIBTLS} ${LIBSSL} ${LIBCRYPTO} ${LIBZ} ${LIBUTIL}
 CFLAGS+=	-I${.CURDIR} -g
 CFLAGS+=	-Wall -Wstrict-prototypes -Wmissing-prototypes

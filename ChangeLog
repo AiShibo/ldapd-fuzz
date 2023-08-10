@@ -1,3 +1,102 @@
+2023-06-26 10:28  claudio
+
+	* usr.sbin/ldapd/conn.c: Improve the conn_err() bufferevent error
+	  callback. To better report errors.  OK kn@
+
+2023-04-30 23:49  jsg
+
+	* usr.sbin/ldapd/conn.c: avoid use after free ok jmatthew@
+
+2023-03-08 04:43  guenther
+
+	* usr.sbin/ldapd/control.c: Delete obsolete /* ARGSUSED */ lint
+	  comments.
+
+	  ok miod@ millert@
+
+2023-03-02 17:09  jmc
+
+	* usr.sbin/: ldapctl/ldapctl.8, ldapd/ldapd.8, ldapd/ldapd.conf.5:
+	  improve the Nd lines such that the format is consistent for the
+	  various *d, *conf, *ctl files (where relevant) and simple;
+
+	  also makes "man -k routing" more useful;
+
+	  help from claudio and florian ok claudio florian millert
+
+2023-03-01 08:17  claudio
+
+	* usr.sbin/ldapd/ldape.c: Change fatal() to fatalx() since the
+	  errno has no meaning here.  OK tb@
+
+2023-02-03 17:43  tb
+
+	* usr.sbin/ldapd/conn.c: Add void to conn_close_any()
+
+	  This makes the function definition match the prototype and
+	  silences a clang-15 warning.
+
+2022-12-09 09:30  tb
+
+	* share/mk/bsd.regress.mk: Allow overriding default run-regress-*
+	  targets
+
+	  Overriding a default run-regress-* target with custom commands is
+	  already possible and done by many tests. The fact that it
+	  currently works depends on behavior in the BUGs section of
+	  make.1, however. The fix is not to add commands if the target is
+	  already defined with commands.
+
+	  tested by anton correct fix from espie, ok anton
+
+2022-11-03 17:58  martijn
+
+	* lib/libutil/ber.c: When decoding a sequence/set, make sure that:
+	  - We don't create an uninitialized element when there are no
+	  subelements to   decode - If subelements overflow we return
+	  EINVAL
+
+	  While here fix an eyesore of a line continuation.
+
+	  OK claudio@
+
+2022-10-12 11:57  jsg
+
+	* usr.sbin/ldapd/schema.c: avoid use after free in error paths ok
+	  miod@ martijn@
+
+2022-06-29 09:10  martijn
+
+	* usr.sbin/ldapd/auth.c: Use strncasecmp instead of strncmp when
+	  comparing the password scheme.  This change could theoretically
+	  affect some people who actually have one of the scheme's in lower
+	  case in their password, but this is extremely unlikely in the
+	  real world.
+
+	  Pointed out by David Diggles (david <at> elven <dot> com <dot>
+	  au) OK sthen@
+
+2022-05-20 09:46  bluhm
+
+	* regress/usr.sbin/ldapd/Makefile: New ldapsearch does not support
+	  -h and -p for host and port, but accepts -H ldapuri.	Use startup
+	  and cleanup framework.  Pidfile does not work anymore, use pkill
+	  ldapd.  Delete deactivated and failing cpan test.
+
+2022-03-31 09:03  martijn
+
+	* usr.bin/ldap/aldap.c: 'e' is no longer an optional element for
+	  ober_scanf_elements.	This caused the last attribute to be
+	  dropped.
+
+	  Reported by Allan Streib (astreib <at> fastmail <dot> fm)
+	  Reminded by Raf Czlonka (rczlonka <at> gmail <dot> com) OK tb@
+	  claudio@
+
+2022-02-10 13:06  robert
+
+	* usr.sbin/ldapd/ldapd.c: unveil _PATH_LOGIN_CONF_D
+
 2021-12-20 13:26  claudio
 
 	* usr.sbin/ldapd/: attributes.c, modify.c: When removing the last

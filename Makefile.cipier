@@ -21,7 +21,7 @@ GH_PROJECT=	ldapd \
 GH_TAGNAME=	${LIBIMSG_VERSION}:libimsg \
 		${LIBEVENT_VERSION}:libevent
 
-USE_RC_SUBR=	ldapd
+#USE_RC_SUBR=	ldapd
 USES=		uidfix
 
 # XXX Static libraries with PIE are currently unsupported.

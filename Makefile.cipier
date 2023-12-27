@@ -2,7 +2,7 @@ PORTNAME=	ldapd
 DISTVERSION=	7.3.20230810
 CATEGORIES=	www
 MASTER_SITES=	OPENBSD/LibreSSL:libressl
-DISTFILES=	libressl-${SSL}.tar.gz:libressl
+DISTFILES=	libressl-${SSL_VERSION}.tar.gz:libressl
 
 MAINTAINER=	koue@chaosophia.net
 COMMENT=	OpenBSD ldap server
@@ -43,8 +43,8 @@ post-patch:
 		${WRKSRC}/src/usr.sbin/ldapd/ldapd.h
 
 pre-configure:
-	@(cd ${WRKDIR} && ${EXTRACT_CMD} ${EXTRACT_BEFORE_ARGS} ${DISTDIR}/libressl-${SSL}.tar.gz ${EXTRACT_AFTER_ARGS})
-	@(cd ${WRKDIR}/libressl-${SSL} && ${SETENV} ./configure && ${SETENV} ${MAKE_ENV} ${MAKE})
+	@(cd ${WRKDIR} && ${EXTRACT_CMD} ${EXTRACT_BEFORE_ARGS} ${DISTDIR}/libressl-${SSL_VERSION}.tar.gz ${EXTRACT_AFTER_ARGS})
+	@(cd ${WRKDIR}/libressl-${SSL_VERSION} && ${SETENV} ./configure && ${SETENV} ${MAKE_ENV} ${MAKE})
 	@(cd ${WRKSRC_libimsg} && ${SETENV} ${MAKE_ENV} ${MAKE})
 	@(cd ${WRKSRC_libevent} && ${SETENV} ${MAKE_ENV} ${MAKE})
 

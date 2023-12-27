@@ -1,6 +1,9 @@
 #	$OpenBSD: Makefile,v 1.17 2020/09/19 09:46:04 tb Exp $
 
 LOCALBASE?=	/usr/local
+EVENTDIR?=	${.CURDIR}/../../../libevent
+IMSGDIR?=	${.CURDIR}/../../../libimsg
+
 PROG=		ldapd
 MAN=		ldapd.8 ldapd.conf.5
 SRCS=		log.c logmsg.c control.c \
@@ -15,11 +18,19 @@ SRCS+=		ber.c
 .PATH: ${.CURDIR}/../../lib/libc/gen
 SRCS+=		auth_subr.c authenticate.c
 
-LDADD=		../../../libevent/src/lib/libevent/libevent.a
-LDADD+= 	../../../libimsg/src/lib/libutil/libimsg.a
+LDADD=		${EVENTDIR}/src/lib/libevent/libevent.a
+LDADD+= 	${IMSGDIR}/src/lib/libutil/libimsg.a
+
+.ifdef SSLDIR
+LDADD+= 	${SSLDIR}/tls/.libs/libtls.a \
+		${SSLDIR}/ssl/.libs/libssl.a \
+		${SSLDIR}/crypto/.libs/libcrypto.a
+.else
 LDADD+= 	/usr/local/lib/libtls.a \
 		/usr/local/lib/libssl.a \
 		/usr/local/lib/libcrypto.a
+.endif
+
 LDADD+= 	-lcrypt -lz -lutil
 DPADD=		${LIBEVENT} ${LIBTLS} ${LIBSSL} ${LIBCRYPTO} ${LIBZ} ${LIBUTIL}
 CFLAGS+=	-I${.CURDIR} -g
@@ -27,12 +38,19 @@ CFLAGS+=	-Wall -Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+=	-Wmissing-declarations
 CFLAGS+=	-Wshadow -Wpointer-arith -Wcast-qual
 CFLAGS+=	-Wsign-compare
-CFLAGS+=	-I${.CURDIR}/../../../libevent/src/lib/libevent \
-		-I${.CURDIR}/../../../libimsg/src/lib/libutil \
+CFLAGS+=	-I${EVENTDIR}/src/lib/libevent \
+		-I${IMSGDIR}/src/lib/libutil \
 		-I${.CURDIR}/../../lib/libutil \
-		-I${.CURDIR}/../../include \
-		-I ${LOCALBASE}/include \
-		-D__dead=''
+		-I${.CURDIR}/../../include
+
+.ifdef SSLDIR
+CFLAGS+=	-I${SSLDIR}/include
+.else
+CFLAGS+=	-I${LOCALBASE}/include
+.endif
+
+CFLAGS+=	-D__dead=''
+
 CLEANFILES+=	y.tab.h parse.c
 
 SCHEMA_FILES=	bsd.schema \

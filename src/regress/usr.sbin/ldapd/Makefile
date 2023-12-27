@@ -36,8 +36,8 @@ bootstrap: kill
 	[ -z "${SUDO}" ] || ${SUDO} true
 	rm -f ldapd1.conf ldapd.log
 	${SUDO} install -m 600 -o root ${.CURDIR}/ldapd.conf ldapd1.conf
-	${SUDO} ldapd -n -r ${.OBJDIR} -f ${.OBJDIR}/ldapd1.conf
-	${SUDO} ldapd -dvv -r ${.OBJDIR} -f ${.OBJDIR}/ldapd1.conf >ldapd.log 2>&1 &
+	${SUDO} ../../../usr.sbin/ldapd/ldapd -n -r ${.OBJDIR} -f ${.OBJDIR}/ldapd1.conf
+	${SUDO} ../../../usr.sbin/ldapd/ldapd -dvv -r ${.OBJDIR} -f ${.OBJDIR}/ldapd1.conf >ldapd.log 2>&1 &
 	# wait up to 10 seconds for startup
 	for i in `jot 100`; do \
 	    if grep -q 'ldape: entering event loop' ldapd.log; then break; fi; \

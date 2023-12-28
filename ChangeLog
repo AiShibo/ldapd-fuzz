@@ -1,3 +1,47 @@
+2023-11-10 12:12  martijn
+
+	* lib/libutil/ber.c: Give ober_printf_elements() a ber_element
+	  array, similar to ober_scanf_elements(). This allows us to move
+	  down and back up multiple levels in with nested sequences and
+	  sets.
+
+	  While here, on failure, make sure we free (and unlink if needed)
+	  all elements we created.
+
+	  OK claudio@, tb@
+
+2023-09-24 08:28  tb
+
+	* share/mk/bsd.regress.mk: Make REGRESS_LOG more useful again
+
+	  Enabling REGRESS_FAIL_EARLY made REGRESS_LOG error out at the
+	  first error, which is pointless. So default to no if REGRESS_LOG
+	  is set unless the user explicitly enabled it.
+
+	  Requested by claudio ok bluhm
+
+2023-09-15 07:13  tb
+
+	* share/mk/bsd.regress.mk: Default REGRESS_FAIL_EARLY to yes
+
+	  The current fail open behavior may be desirable in some
+	  circumstances, but it is an unexpected and dangerous default
+	  since one expects some kind of feedback when running a test
+	  suite. Currently failing tests are only visible on inspecting the
+	  log, which led to unsuspecting people missing failures several
+	  times in the past. Flip the default to fail closed. For those
+	  that want to have the old behavior, it is easy enough to set the
+	  variable to no.
+
+	  Positive feedback job and schwarze ok kn
+
+2023-08-22 12:50  gerhard
+
+	* lib/libutil/ber.c: Don't fail in ober_scanf_elements() when
+	  encountering empty sequences.
+
+	  Ok martijn@
+
 2023-06-26 10:28  claudio
 
 	* usr.sbin/ldapd/conn.c: Improve the conn_err() bufferevent error

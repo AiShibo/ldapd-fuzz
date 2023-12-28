@@ -43,7 +43,11 @@
 #endif
 
 #define CONFFILE		 "/etc/ldapd.conf"
+#ifdef __OpenBSD__
 #define LDAPD_USER		 "_ldapd"
+#else
+#define LDAPD_USER		 "ldap"
+#endif
 #define LDAPD_SOCKET		 "/var/run/ldapd.sock"
 #define DATADIR			 "/var/db/ldap"
 #define LDAP_PORT		 389

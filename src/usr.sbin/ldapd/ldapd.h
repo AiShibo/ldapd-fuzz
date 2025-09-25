@@ -308,6 +308,7 @@ enum imsg_type {
 	IMSG_LDAPD_AUTH_RESULT,
 	IMSG_LDAPD_OPEN,
 	IMSG_LDAPD_OPEN_RESULT,
+	IMSG_EOM,
 };
 
 struct ns_stat {

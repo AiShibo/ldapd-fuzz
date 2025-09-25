@@ -213,8 +213,10 @@ main(int argc, char *argv[])
 	    PF_UNSPEC, pipe_parent2ldap) != 0)
 		fatal("socketpair");
 	
+	/*
 	ldape_pid = start_child(PROC_LDAP_SERVER, saved_argv0,
 	    pipe_parent2ldap[1], debug, verbose, csockpath, conffile);
+	*/
 
 	ldap_loginit("auth", debug, verbose);
 	setproctitle("auth");
@@ -256,6 +258,70 @@ main(int argc, char *argv[])
 		err(1, "pledge");
 #endif
 
+	struct imsgbuf other_side;
+	imsg_init(&other_side, pipe_parent2ldap[1]);
+
+	// void *payload = malloc(sizeof(uint64_t));
+	// imsg_compose(&other_side, IMSG_LDAPD_AUTH, 0, 0, -1, payload, sizeof(uint64_t));
+	// imsg_flush(&other_side);
+
+
+	for (;;) {
+		unsigned char metadata[8];
+		unsigned char *payload = NULL;
+		ssize_t bytes_read;
+		struct imsgbuf *target_ibuf;
+		unsigned char sender;
+		unsigned char msg_type;
+		unsigned short msg_size;
+		uint32_t msg_id;
+		size_t payload_read = 0;
+
+		bytes_read = read(STDIN_FILENO, metadata, 1);
+		if (bytes_read <= 0) break;
+		sender = metadata[0] % 2;
+
+		bytes_read = read(STDIN_FILENO, metadata + 1, 1); 
+		if (bytes_read <= 0) break;
+		msg_type = (metadata[1] % 11 + 1);
+
+		bytes_read = read(STDIN_FILENO, metadata + 2, 2);
+		if (bytes_read < 2) break;
+		msg_size = (metadata[2] | (metadata[3] << 8)) % 512;
+
+		bytes_read = read(STDIN_FILENO, metadata + 4, 4); 
+		if (bytes_read < 4) break;
+		msg_id =
+			((uint32_t)(uint8_t)metadata[4])       |
+			((uint32_t)(uint8_t)metadata[5] << 8)  |
+			((uint32_t)(uint8_t)metadata[6] << 16) |
+			((uint32_t)(uint8_t)metadata[7] << 24);
+
+		if (msg_size > 0) {
+			payload = malloc(msg_size);
+			if (payload == NULL) break; 
+
+			while (payload_read < msg_size) {
+				bytes_read = read(STDIN_FILENO, payload + payload_read, msg_size - payload_read);
+				if (bytes_read <= 0) break;
+				payload_read += bytes_read;
+			}
+		}
+
+		target_ibuf = &other_side;
+		printf("Fuzzing: sending msg_type=%d, size=%zu, id=%u to %s\n",
+				msg_type, payload_read, msg_id, (sender == 0) ? "other_side" : "other_constraint");
+		imsg_compose(target_ibuf, msg_type, 0, 0, -1, payload, payload_read);
+
+		if (payload != NULL) {
+			free(payload);
+			payload = NULL;
+		}
+	}
+
+	imsg_compose(&other_side, IMSG_EOM, 0, 0, -1, NULL, -1);
+	imsg_flush(&other_side);
+
 	event_dispatch();
 
 	log_debug("ldapd: exiting");
@@ -272,6 +338,7 @@ ldapd_imsgev(struct imsgev *iev, int code, struct imsg *imsg)
 		    __func__, imsg->hdr.type, iev->ibuf.fd);
 		switch (imsg->hdr.type) {
 		case IMSG_LDAPD_AUTH:
+			log_debug("IMSG_LDAPD_AUTH being invoked!!!!");
 			ldapd_auth_request(iev, imsg);
 			break;
 		case IMSG_CTL_LOG_VERBOSE:
@@ -279,6 +346,9 @@ ldapd_imsgev(struct imsgev *iev, int code, struct imsg *imsg)
 			break;
 		case IMSG_LDAPD_OPEN:
 			ldapd_open_request(iev, imsg);
+			break;
+		case IMSG_EOM:
+			exit(-1);
 			break;
 		default:
 			log_debug("%s: unexpected imsg %d",
